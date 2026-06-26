@@ -220,7 +220,6 @@
 <div class="main">
 <aside class="sidebar">
 
-  <!-- ① MODE -->
   <div class="sec-hd"><h3>① Précision de la position</h3><div class="sec-hd-line"></div></div>
   <div class="mode-select">
     <button class="mode-btn" id="mode-datum" onclick="setMode('datum')">
@@ -249,7 +248,6 @@
     </button>
   </div>
 
-  <!-- ② POINTS -->
   <div id="points-section" style="display:none">
     <div class="sec-hd"><h3 id="points-title">② Points de référence</h3><div class="sec-hd-line"></div></div>
     <div class="pt-block" id="block-a">
@@ -278,12 +276,10 @@
     </div>
   </div>
 
-  <!-- ③ SCHÉMA -->
   <div id="schema-section" style="display:none">
     <div class="sec-hd"><h3>③ Schéma de recherche</h3><div class="sec-hd-line"></div></div>
     <div class="schema-grid" id="schema-grid"></div>
     <div id="schema-params" style="display:none">
-      <!-- SS -->
       <div id="params-ss" class="schema-params-inner" style="display:none">
         <div class="param-box">
           <div class="param-box-lbl">Direction du vent</div>
@@ -309,7 +305,6 @@
           <button class="btn-pick" style="margin:0;padding:8px;font-size:12px;" onclick="startPick('WIND')">🌬 Cliquer carte : point → Datum = direction vent</button>
         </div>
       </div>
-      <!-- VS -->
       <div id="params-vs" class="schema-params-inner" style="display:none">
         <div class="param-box">
           <div class="param-box-lbl">Zone de ratissage sectorielle</div>
@@ -331,26 +326,21 @@
           <div id="csp-status" style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:6px;text-align:center;">CSP non défini</div>
         </div>
       </div>
-      <!-- TSR -->
       <div id="params-tsr" class="schema-params-inner" style="display:none">
         <div class="param-info">Axe A→B · 1 passe à ½S au-dessus + 1 passe à ½S en dessous · Retour par l'axe</div>
       </div>
-      <!-- TSN -->
       <div id="params-tsn" class="schema-params-inner" style="display:none">
         <div class="param-info">Axe A→B · 1 passe à S au-dessus + 1 passe à S en dessous · Sans retour</div>
       </div>
-      <!-- PS -->
       <div id="params-ps" class="schema-params-inner" style="display:none">
         <div class="param-info">CSP au coin de la ZPA (½S des deux bords) · Passes parallèles au grand axe · Sous-zone par moyen</div>
       </div>
-      <!-- CS -->
       <div id="params-cs" class="schema-params-inner" style="display:none">
         <div class="param-info">Navire suit l'axe A→B · Aéronef fait des passes perpendiculaires · Vitesse navire calculée automatiquement</div>
       </div>
     </div>
   </div>
 
-  <!-- ④ ENVIRONNEMENT -->
   <div id="env-section" style="display:none">
     <div class="sec-hd"><h3>④ Facteurs environnementaux</h3><div class="sec-hd-line"></div></div>
     <div class="env-grid">
@@ -389,7 +379,6 @@
     </div>
   </div>
 
-  <!-- ⑤ DÉTECTION -->
   <div id="detection-section" style="display:none">
     <div class="sec-hd"><h3>⑤ Paramètres de détection</h3><div class="sec-hd-line"></div></div>
     <div class="env-grid">
@@ -410,14 +399,12 @@
     </div>
   </div>
 
-  <!-- ⑥ MOYENS -->
   <div id="moyens-section" style="display:none">
     <div class="sec-hd"><h3>⑥ Moyens engagés</h3><div class="sec-hd-line"></div></div>
     <div id="moyens-list"></div>
     <button class="btn-add-moyen" onclick="addMoyen()">+ Ajouter un moyen</button>
   </div>
 
-  <!-- RÉSULTATS (ZPA seulement) -->
   <div id="results-header" style="display:none">
     <div class="sec-hd"><h3>📊 Résultats ZPA</h3><div class="sec-hd-line"></div></div>
     <div class="res-grid">
@@ -428,7 +415,6 @@
     </div>
   </div>
 
-  <!-- BILAN MOYENS -->
   <div id="bilan-section" style="display:none">
     <div class="sec-hd"><h3>📋 Bilan des moyens</h3><div class="sec-hd-line"></div></div>
     <div class="bilan-table" id="bilan-table"></div>
@@ -443,13 +429,11 @@
     </div>
   </div>
 
-  <!-- ACTIONS -->
   <div class="act-bar" id="actions-bar" style="display:none">
     <button class="btn-calc" id="btn-calc" onclick="calculateZPA()" disabled>⚡ <span id="calc-label">Calculer la ZPA</span></button>
     <button class="btn-secondary" onclick="resetAll()">✕ Réinitialiser</button>
   </div>
 
-  <!-- EXPORT -->
   <div id="export-section" style="display:none">
     <div class="sec-hd"><h3>📤 Export</h3><div class="sec-hd-line"></div></div>
     <div class="btn-export">
@@ -458,7 +442,6 @@
     </div>
   </div>
 
-  <!-- LÉGENDE -->
   <div id="legend-header" style="display:none">
     <div class="sec-hd"><h3>🗺 Légende</h3><div class="sec-hd-line"></div></div>
     <div class="legend" id="legend-content"></div>
@@ -471,7 +454,6 @@
   <div id="mouse-coords">Lon: — | Lat: —</div>
   <button class="map-btn" id="btn-meteo" onclick="openWindyPanel('wind')">💨 Vents</button>
   <button class="map-btn" id="btn-windy" onclick="openWindyPanel('currents')">🌊 Courants</button>
-  <!-- Panneau Windy intégré -->
   <div id="windy-panel">
     <div id="windy-panel-header">
       <span id="windy-panel-title">🌊 Windy</span>
@@ -821,20 +803,9 @@ require([
         updateCalcBtn();
       }
     } else if(pickingPoint==='WIND'){
-      // Convention météo : la direction du vent = D'OÙ il vient
-      // Si on clique au SUD du datum → vent vient du SUD → afficher S (180°)
-      // La 1ère passe SS est dans le sens du vent = vers le NORD = cap 0°
-      //
-      // Vecteur du point cliqué vers le datum = direction où va le vent
-      // D'où vient le vent = direction opposée = vecteur datum → point cliqué
       if(ptA){
-        // Vecteur datum → point cliqué (d'où vient le vent)
-        const dx = x - ptA.x; // +Est
-        const dy = y - ptA.y; // +Nord
-        // Cap météo d'où vient le vent : atan2(Est, Nord)
-        // Clic au Sud : dx=0, dy=-1 → atan2(0,-1) = 180° → S ✓
-        // Clic au Nord : dx=0, dy=+1 → atan2(0,+1) = 0°  → N ✓
-        // Clic à l'Est : dx=+1,dy=0  → atan2(+1,0) = 90° → E ✓
+        const dx = x - ptA.x; 
+        const dy = y - ptA.y; 
         const windDir = ((Math.atan2(dx, dy) * 180 / Math.PI) + 360) % 360;
         const dirs=[0,22.5,45,67.5,90,112.5,135,157.5,180,202.5,225,247.5,270,292.5,315,337.5];
         const closest=dirs.reduce((a,b)=>Math.abs(b-windDir)<Math.abs(a-windDir)?b:a);
@@ -875,7 +846,6 @@ require([
     const [lon1,lat1]=toWGS84(...p1);
     const [lon2,lat2]=toWGS84(...p2);
     gl.add(new Graphic({geometry:new Polyline({paths:[[[lon1,lat1],[lon2,lat2]]],spatialReference:{wkid:4326}}),symbol:new SLS({color,width})}));
-    // Flèche au bout
     const ang=Math.atan2(p2[1]-p1[1],p2[0]-p1[0]);
     const arrowLen=Math.hypot(p2[0]-p1[0],p2[1]-p1[1])*0.08;
     const a1=ang+2.7,a2=ang-2.7;
@@ -900,13 +870,9 @@ require([
 
   // ─── Schémas ─────────────────────────────────────────
 
-  // SS — Spirale carrée
   function drawSS(ax,ay,S_m){
     const windDir=parseFloat(document.getElementById('ss-wind-dir').value)||0;
-    // windDir = direction où VA le vent (N=0, E=90, S=180, O=270)
-    // 1ère passe dans le sens du vent = même cap = windDir
     const startCapRad = windDir * Math.PI / 180;
-    // Cap en Lambert NC : cap 0°=Nord=+Y, cap 90°=Est=+X
     const capToVec=cap=>[Math.sin(cap),Math.cos(cap)];
     const dirs=[capToVec(startCapRad),
                 capToVec(startCapRad+Math.PI/2),
@@ -924,37 +890,18 @@ require([
     addLabel(ax+S_m*0.1,ay+S_m*0.1,'Datum/CSP',[255,220,100],10,10);
   }
 
-    // VS — Recherche sectorielle IAMSAR
-  // CSP → Datum → P1 (droite/diamètre)
-  // P1 → P2 (corde, virage tribord 120°)
-  // P2 → Datum → P3 (droite/diamètre)
-  // P3 → P4 (corde, virage tribord 120°)
-  // P4 → Datum → P5 (droite/diamètre)
-  // P5 → CSP (retour)
-  // ang0 = angle Datum→CSP
-  // P1 = opposé de CSP par rapport au Datum (ang0 + π)
-  // Virage tribord (sens horaire) depuis P1 de 120° → P2
-  // P3 = opposé de P2 (diamètre via Datum)
-  // Virage tribord depuis P3 de 120° → P4
-  // P5 = opposé de P4 (diamètre via Datum)
   function drawVS(ax,ay,radius_m){
     if(!ptCSP)return;
     const cspX=ptCSP.x,cspY=ptCSP.y;
     const DAT=[ax,ay];
     const CSP=[cspX,cspY];
 
-    // ang0 = direction Datum → CSP
     const ang0 = Math.atan2(cspY-ay, cspX-ax);
-
-    // P1 = côté opposé au CSP (diamètre complet depuis CSP passe par Datum vers P1)
     const a1 = ang0 + Math.PI;
-    // Virage tribord = sens horaire = soustraire l'angle
-    // Depuis P1, virage tribord 120° → direction de P2
-    // En convention mathématique, tribord = sens horaire = angle décroissant
-    const a2 = a1 - 2*Math.PI/3;   // P1 tourne 120° à tribord
-    const a3 = a2 + Math.PI;        // P3 = opposé de P2 (diamètre via Datum)
-    const a4 = a3 - 2*Math.PI/3;   // P3 tourne 120° à tribord
-    const a5 = a4 + Math.PI;        // P5 = opposé de P4 (diamètre via Datum)
+    const a2 = a1 - 2*Math.PI/3;   
+    const a3 = a2 + Math.PI;        
+    const a4 = a3 - 2*Math.PI/3;   
+    const a5 = a4 + Math.PI;        
 
     const P1=[ax+radius_m*Math.cos(a1), ay+radius_m*Math.sin(a1)];
     const P2=[ax+radius_m*Math.cos(a2), ay+radius_m*Math.sin(a2)];
@@ -962,7 +909,6 @@ require([
     const P4=[ax+radius_m*Math.cos(a4), ay+radius_m*Math.sin(a4)];
     const P5=[ax+radius_m*Math.cos(a5), ay+radius_m*Math.sin(a5)];
 
-    // ── 1ère RECHERCHE ──
     addArrowLine(CSP, DAT, [255,220,100,240], 2.5);
     addArrowLine(DAT, P1,  [255,220,100,240], 2.5);
     addArrowLine(P1,  P2,  [255,220,100,240], 2.5);
@@ -973,9 +919,8 @@ require([
     addArrowLine(DAT, P5,  [255,220,100,240], 2.5);
     addArrowLine(P5,  CSP, [255,220,100,240], 2.5);
 
-    // ── 2ème RECHERCHE (décalée de 30° tribord = -30°) ──
     const off = -Math.PI/6;
-    const Q0 = [(cspX+ax)/2, (cspY+ay)/2]; // mi-chemin CSP→Datum
+    const Q0 = [(cspX+ax)/2, (cspY+ay)/2];
     const Q1=[ax+radius_m*Math.cos(a1+off), ay+radius_m*Math.sin(a1+off)];
     const Q2=[ax+radius_m*Math.cos(a2+off), ay+radius_m*Math.sin(a2+off)];
     const Q3=[ax+radius_m*Math.cos(a3+off), ay+radius_m*Math.sin(a3+off)];
@@ -991,7 +936,6 @@ require([
     addDashedLine(Q4,  DAT, [255,220,100,130], 1.5);
     addDashedLine(DAT, Q5,  [255,220,100,130], 1.5);
 
-    // ── MARQUEURS ──
     const [cLon,cLat]=toWGS84(cspX,cspY);
     gl.add(new Graphic({geometry:new Point({longitude:cLon,latitude:cLat,spatialReference:{wkid:4326}}),
       symbol:new SMS({style:"triangle",color:[255,220,0],size:14,outline:{color:[0,0,0],width:1}})}));
@@ -1004,7 +948,6 @@ require([
              '120°',[200,200,200],9,0);
   }
 
-  // TSR — Aller-retour
   function drawTSR(ax,ay,bx,by,S_m){
     const dir=Math.atan2(by-ay,bx-ax);
     const perp=dir+Math.PI/2;
@@ -1021,7 +964,6 @@ require([
     addLabel((pA2[0]+pB2[0])/2-half*0.4*Math.cos(perp),(pA2[1]+pB2[1])/2-half*0.4*Math.sin(perp),'½S',[200,200,200],9,0);
   }
 
-  // TSN — Sans retour
   function drawTSN(ax,ay,bx,by,S_m){
     const dir=Math.atan2(by-ay,bx-ax);
     const perp=dir+Math.PI/2;
@@ -1036,7 +978,6 @@ require([
     addLabel((pA2[0]+pB2[0])/2-S_m*0.4*Math.cos(perp),(pA2[1]+pB2[1])/2-S_m*0.4*Math.sin(perp),'S',[200,200,200],9,0);
   }
 
-  // PS — Balayage parallèle
   function drawPS(ax,ay,bx,by,Ra_m,Rb_m,S_m,nb){
     const dir=Math.atan2(by-ay,bx-ax);
     const perp=dir+Math.PI/2;
@@ -1047,7 +988,6 @@ require([
       const color=moyens[mi]?moyens[mi].color:'#ffd166';
       const offStart=-halfW+mi*zoneW;
       const offEnd=-halfW+(mi+1)*zoneW;
-      // Rectangle sous-zone
       const z1a=[ax+offStart*Math.cos(perp)-Ra_m*Math.cos(dir),ay+offStart*Math.sin(perp)-Ra_m*Math.sin(dir)];
       const z2a=[ax+offEnd*Math.cos(perp)-Ra_m*Math.cos(dir),ay+offEnd*Math.sin(perp)-Ra_m*Math.sin(dir)];
       const z1b=[bx+offStart*Math.cos(perp)+Rb_m*Math.cos(dir),by+offStart*Math.sin(perp)+Rb_m*Math.sin(dir)];
@@ -1055,7 +995,6 @@ require([
       const hexC=hexToRgba(color);
       gl.add(new Graphic({geometry:new Polygon({rings:[[z1a,z2a,z2b,z1b,z1a].map(([x,y])=>toWGS84(x,y))],spatialReference:{wkid:4326}}),
         symbol:new SFS({color:[hexC[0],hexC[1],hexC[2],40],outline:{color:[hexC[0],hexC[1],hexC[2],180],width:1}})}));
-      // Passes
       let passOff=offStart+S_m/2;
       let passIdx=0;
       while(passOff<offEnd){
@@ -1065,7 +1004,6 @@ require([
         else addArrowLine(pb,pa,[hexC[0],hexC[1],hexC[2],180],1.5);
         passOff+=S_m;passIdx++;
       }
-      // CSP au coin de la sous-zone
       const cspX=z1a[0]+S_m/2*Math.cos(perp)+S_m/2*Math.cos(dir);
       const cspY=z1a[1]+S_m/2*Math.sin(perp)+S_m/2*Math.sin(dir);
       if(mi===0){
@@ -1074,7 +1012,6 @@ require([
         gl.add(new Graphic({geometry:cpt,symbol:new SMS({style:"diamond",color:[255,255,0],size:10,outline:{color:[0,0,0],width:1}})}));
         addLabel(cspX,cspY,'CSP',[255,255,0],10,14);
       }
-      // Label moyen
       const midOff=(offStart+offEnd)/2;
       const midX=ax+midOff*Math.cos(perp)+(bx-ax)/2*Math.cos(dir);
       const midY=ay+midOff*Math.sin(perp)+(by-ay)/2*Math.sin(dir);
@@ -1083,7 +1020,6 @@ require([
     }
   }
 
-  // CS — Balayage en lacets
   function drawCS(ax,ay,bx,by,S_m,Ra_m){
     const dir=Math.atan2(by-ay,bx-ax);
     const perp=dir+Math.PI/2;
@@ -1120,7 +1056,6 @@ require([
     const ax=ptA.x,ay=ptA.y;
 
     if(mode==='datum'){
-      // Cercle de ratissage
       const Ra_m=RA_NM*NM;
       gl.add(new Graphic({geometry:makeCircle(ax,ay,Ra_m),symbol:new SFS({color:[0,200,224,20],outline:{color:[0,200,224,200],width:2,style:"dash"}})}));
       const [lonA,latA]=toWGS84(ax,ay);
@@ -1139,7 +1074,6 @@ require([
       const bx=ptB.x,by=ptB.y;
       const D_m=Math.hypot(bx-ax,by-ay),D_nm=D_m/NM;
       const Ra_m=RA_NM*NM,Rb_m=(RA_NM+0.1*D_nm)*NM;
-      // ZPA
       gl.add(new Graphic({geometry:buildTrapeze(ax,ay,Ra_m,bx,by,Rb_m),symbol:new SFS({color:"rgba(0,200,224,0.2)",outline:{color:"rgba(0,200,224,0.85)",width:2}})}));
       gl.add(new Graphic({geometry:makeCircle(ax,ay,Ra_m),symbol:new SFS({color:[0,0,0,0],outline:{color:[0,212,160,210],width:2,style:"dash"}})}));
       gl.add(new Graphic({geometry:makeCircle(bx,by,Rb_m),symbol:new SFS({color:[0,0,0,0],outline:{color:[232,160,32,210],width:2,style:"dash"}})}));
@@ -1155,7 +1089,7 @@ require([
       if(schema==='TSN')drawTSN(ax,ay,bx,by,S_m);
       if(schema==='PS') drawPS(ax,ay,bx,by,Ra_m,Rb_m,S_m,nb);
       if(schema==='CS') drawCS(ax,ay,bx,by,S_m,Ra_m);
-      // Résultats
+      
       const area_m2=(Ra_m+Rb_m)*D_m/2;
       const fmt=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u2009');
       const areaStr=area_m2<10000?`${fmt(area_m2)} m²`:`${fmt(area_m2/10000)} ha`;
@@ -1167,7 +1101,7 @@ require([
       document.getElementById('res-Rb').textContent=`${(Rb_m/NM).toFixed(1)} Nm`;
       document.getElementById('res-Rb-km').textContent=`${(Rb_m/1000).toFixed(0)} km`;
       document.getElementById('res-area').textContent=areaStr;
-      // Bilan
+      
       if(moyens.length>0){
         document.getElementById('bilan-section').style.display='block';
         const table=document.getElementById('bilan-table');
@@ -1249,7 +1183,7 @@ require([
 });
 
 
-// ═══ WINDY API ═══
+// ═══ WINDY API AVEC CORRECTION ARCGIS ═══
 let windyAPI = null;
 let windyMap = null;
 let windyLoaded = false;
@@ -1257,9 +1191,19 @@ let currentWindyLayer = 'wind';
 
 function loadWindyAPI(callback) {
   if (windyLoaded) { callback(); return; }
+
+  // 1. On "cache" temporairement le define de Dojo (ArcGIS)
+  const tempDefine = window.define;
+  window.define = undefined;
+
   const script = document.createElement('script');
   script.src = 'https://api.windy.com/assets/map-forecast/libBoot.js';
-  script.onload = () => { windyLoaded = true; callback(); };
+  script.onload = () => { 
+    // 2. On le restaure une fois que Windy (et Leaflet) ont fini de charger
+    window.define = tempDefine;
+    windyLoaded = true; 
+    callback(); 
+  };
   document.head.appendChild(script);
 }
 
@@ -1267,7 +1211,6 @@ window.openWindyPanel = function(layer) {
   currentWindyLayer = layer;
   updateWindyLayerBtns(layer);
 
-  // Rendre le panneau visible d'abord
   const panel = document.getElementById('windy-panel');
   panel.classList.add('visible');
 
@@ -1275,10 +1218,8 @@ window.openWindyPanel = function(layer) {
   const lon = ptA ? lnc2wgs(ptA.x, ptA.y)[0] : 165.62;
 
   loadWindyAPI(() => {
-    // Attendre que le DOM soit rendu
     setTimeout(() => {
       if (windyAPI) {
-        // Windy déjà initialisé, juste changer la couche et centrer
         windyAPI.store.set('overlay', layer);
         windyMap.setView([lat, lon], 7);
         return;
