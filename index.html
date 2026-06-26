@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Aide à la Décision SAR – Nouvelle-Calédonie</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/dark/main.css"/>
+  <script src="https://js.arcgis.com/4.29/"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#05080f;--panel:#080e1a;--panel2:#0c1422;--border:#152234;--border2:#1e3350;--border3:#274468;
+      --amber:#e8a020;--amber-l:#f5bc50;--amber-d:#b07810;
+      --cyan:#00c8e0;--green:#00d4a0;--red:#e03040;--yellow:#ffd166;
+      --text:#b8d0e8;--text2:#7090b0;--text3:#405870;
+      --mono:'Share Tech Mono',monospace;--title:'Rajdhani',sans-serif;--body:'Exo 2',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;max-height:100%;overflow:hidden;}
+    body{font-family:var(--body);background:var(--bg);color:var(--text);height:100vh;max-height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:15px;}
+
+    /* HEADER */
+    header{height:56px;flex-shrink:0;background:linear-gradient(90deg,#030610,#08122a 30%,#08122a 70%,#030610);border-bottom:2px solid var(--amber-d);display:flex;align-items:center;padding:0 16px;gap:12px;position:relative;}
+    header::before{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--amber) 30%,var(--amber-l) 50%,var(--amber) 70%,transparent);animation:goldline 4s ease-in-out infinite;}
+    @keyframes goldline{0%,100%{opacity:.5}50%{opacity:1}}
+    .h-emblem{width:40px;height:40px;border-radius:50%;border:2px solid var(--amber);background:radial-gradient(circle at 40% 40%,#1a2840,#08122a);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;animation:emblem-glow 3s ease-in-out infinite;}
+    @keyframes emblem-glow{0%,100%{box-shadow:0 0 10px rgba(232,160,32,.25)}50%{box-shadow:0 0 20px rgba(232,160,32,.5)}}
+    .h-t1{font-family:var(--title);font-size:16px;font-weight:700;letter-spacing:4px;color:var(--amber-l);text-transform:uppercase;}
+    .h-t2{font-size:11px;color:var(--text);letter-spacing:3px;text-transform:uppercase;opacity:.85;}
+    .h-sep{width:1px;height:28px;background:linear-gradient(to bottom,transparent,var(--border3),transparent);margin:0 8px;}
+    .h-zpa{font-family:var(--title);font-size:20px;font-weight:700;letter-spacing:3px;color:#fff;text-shadow:0 0 16px rgba(255,255,255,.4);border-left:3px solid var(--amber);padding-left:14px;}
+    .h-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+    .h-badge{font-family:var(--mono);font-size:11px;color:var(--amber-l);background:rgba(232,160,32,.08);border:1px solid var(--amber-d);border-radius:3px;padding:4px 10px;}
+    #utc-clock{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--amber);background:rgba(232,160,32,.08);border:1px solid var(--amber-d);border-radius:3px;padding:4px 10px;}
+
+    /* LAYOUT */
+    .main{display:flex;flex:1;overflow:hidden;min-height:0;height:0;max-height:100%;}
+
+    /* SIDEBAR */
+    .sidebar{width:360px;flex-shrink:0;background:linear-gradient(180deg,var(--panel),var(--bg));border-right:1px solid var(--border2);overflow-y:auto;overflow-x:hidden;height:100%;}
+    .sidebar::-webkit-scrollbar{width:4px;}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--border3);border-radius:2px;}
+
+    /* SECTION HEADERS */
+    .sec-hd{padding:10px 16px 9px;display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(232,160,32,.07),transparent);border-bottom:1px solid var(--border);border-top:1px solid var(--border);margin-top:1px;}
+    .sec-hd h3{font-family:var(--title);font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);}
+    .sec-hd-line{flex:1;height:1px;background:linear-gradient(to right,var(--border3),transparent);margin-left:6px;}
+
+    /* MODE BUTTONS */
+    .mode-select{padding:12px;}
+    .mode-btn{display:flex;align-items:flex-start;gap:12px;width:100%;padding:12px 14px;margin-bottom:8px;border-radius:6px;cursor:pointer;transition:all .25s;border:1px solid var(--border2);background:var(--panel2);text-align:left;}
+    .mode-btn:hover,.mode-btn.active{border-color:var(--amber);background:rgba(232,160,32,.1);}
+    .mode-icon{font-size:22px;flex-shrink:0;}
+    .mode-title{font-family:var(--title);font-size:16px;font-weight:700;color:var(--amber-l);display:block;margin-bottom:3px;}
+    .mode-desc{font-size:14px;color:var(--text2);line-height:1.4;}
+    .mode-tag{display:inline-block;margin-top:4px;font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:3px;background:rgba(232,160,32,.12);color:var(--amber);border:1px solid var(--amber-d);}
+
+    /* POINT BLOCKS */
+    .pt-block{margin:8px 12px;border-radius:6px;overflow:hidden;border:1px solid var(--border2);transition:all .3s;}
+    .pt-block.defined{border-color:var(--green);box-shadow:0 0 10px rgba(0,212,160,.12);}
+    .pt-hd{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--border);}
+    .pt-dot{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--title);font-size:15px;font-weight:700;}
+    .dot-a{background:var(--green);color:#000;}
+    .dot-b{background:var(--amber);color:#000;}
+    .pt-lbl{flex:1;font-size:13px;color:var(--text2);line-height:1.3;}
+    .pt-lbl strong{display:block;font-size:15px;color:var(--text);font-weight:600;}
+    .pt-status{font-family:var(--mono);font-size:11px;color:var(--text3);padding:3px 8px;border-radius:10px;border:1px solid var(--border3);white-space:nowrap;}
+    .pt-status.set{color:var(--green);border-color:var(--green);background:rgba(0,212,160,.08);}
+    .pt-coords{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;background:rgba(0,0,0,.25);}
+    .cf label{font-family:var(--mono);font-size:11px;color:var(--text2);letter-spacing:1px;display:block;margin-bottom:4px;text-transform:uppercase;}
+    .cf input{width:100%;background:#04080f;border:1px solid var(--border2);border-radius:3px;color:var(--cyan);font-family:var(--mono);font-size:14px;padding:6px 8px;outline:none;transition:all .2s;}
+    .cf input:focus{border-color:var(--cyan);}
+    .btn-pick{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 12px 12px;padding:11px;width:calc(100% - 24px);border-radius:5px;cursor:pointer;transition:all .25s;font-family:var(--title);font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,rgba(232,160,32,.15),rgba(232,160,32,.08));border:1px solid var(--amber-d);color:var(--amber-l);position:relative;overflow:hidden;}
+    .btn-pick:hover{border-color:var(--amber);box-shadow:0 0 14px rgba(232,160,32,.3);transform:translateY(-1px);}
+    .btn-pick.active{border-color:var(--amber-l);color:#fff;animation:pick-glow .8s ease-in-out infinite;}
+    @keyframes pick-glow{0%,100%{box-shadow:0 0 12px rgba(232,160,32,.4)}50%{box-shadow:0 0 24px rgba(232,160,32,.7)}}
+
+    /* SCHEMA */
+    .schema-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 12px;}
+    .schema-btn{background:var(--panel2);border:1px solid var(--border2);border-radius:5px;padding:9px 10px;cursor:pointer;transition:all .2s;text-align:center;}
+    .schema-btn:hover{border-color:var(--cyan);}
+    .schema-btn.active{border-color:var(--cyan);background:rgba(0,200,224,.12);}
+    .schema-code{font-family:var(--title);font-size:18px;font-weight:700;color:var(--cyan);}
+    .schema-name{font-size:13px;color:var(--text2);margin-top:3px;}
+
+    /* ENV */
+    .env-grid{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    .env-field{background:#05080f;border:1px solid var(--border2);border-radius:4px;padding:8px 10px;}
+    .env-lbl{font-family:var(--mono);font-size:11px;color:#a0c4e0;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-weight:600;}
+    .env-field select,.env-field input[type=number],.env-field input[type=text]{width:100%;background:transparent;border:none;color:var(--cyan);font-family:var(--mono);font-size:14px;outline:none;}
+    .env-field select option{background:#0c1422;}
+
+    /* SCHEMA PARAMS */
+    .schema-params-inner{padding:0 12px 10px;}
+    .param-box{background:#05080f;border:1px solid var(--border2);border-radius:5px;padding:10px 12px;margin-bottom:8px;}
+    .param-box-lbl{font-family:var(--mono);font-size:11px;color:#a0c4e0;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:600;}
+    .param-info{font-size:13px;color:var(--text2);line-height:1.5;padding:8px 12px;background:rgba(0,200,224,.05);border:1px solid var(--border2);border-radius:4px;margin-bottom:8px;}
+
+    /* POD */
+    .pod-grid{display:grid;grid-template-columns:1fr 1fr 1fr;margin:0 12px 10px;gap:6px;}
+    .pod-card{background:#05080f;border:1px solid var(--border2);border-radius:5px;padding:10px 8px;text-align:center;}
+    .pod-val{font-family:var(--title);font-size:24px;font-weight:700;line-height:1;}
+    .pod-lbl{font-family:var(--mono);font-size:11px;letter-spacing:1px;margin-top:4px;}
+    .pod-desc{font-size:12px;color:var(--text3);margin-top:3px;}
+    .c-bar-wrap{margin:0 12px 10px;background:#05080f;border:1px solid var(--border2);border-radius:5px;padding:10px 12px;}
+    .c-bar-track{height:7px;background:var(--border2);border-radius:3px;overflow:hidden;margin:6px 0;}
+    .c-bar-fill{height:100%;border-radius:3px;transition:width .4s,background .4s;}
+    .c-msg{font-size:12px;margin-top:5px;}
+
+    /* MOYENS */
+    .moyen-block{margin:8px 12px;border:1px solid var(--border3);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+    .moyen-hd{display:flex;align-items:center;gap:8px;padding:10px 12px;background:linear-gradient(90deg,rgba(39,68,104,0.5),var(--panel2));border-bottom:1px solid var(--border3);}
+    .moyen-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .moyen-body{padding:10px 12px;background:rgba(0,0,0,.2);}
+    .moyen-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
+    .moyen-field{background:#05080f;border:1px solid var(--border2);border-radius:3px;padding:6px 8px;}
+    .moyen-lbl{font-family:var(--mono);font-size:11px;color:#a0c4e0;text-transform:uppercase;margin-bottom:3px;font-weight:600;}
+    .moyen-field input,.moyen-field select{width:100%;background:transparent;border:none;color:var(--cyan);font-family:var(--mono);font-size:13px;outline:none;}
+    .moyen-field select option{background:#0c1422;}
+    .btn-add-moyen{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 12px;padding:12px;width:calc(100% - 24px);border-radius:5px;cursor:pointer;background:rgba(0,212,160,0.06);border:1px solid rgba(0,212,160,0.3);color:var(--green);font-family:var(--title);font-size:14px;letter-spacing:2px;text-transform:uppercase;transition:all .2s;}
+    .btn-add-moyen:hover{border-color:var(--green);color:var(--green);}
+    .btn-del-moyen{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:13px;margin-left:auto;transition:color .2s;}
+    .btn-del-moyen:hover{color:var(--red);}
+
+    /* RÉSULTATS */
+    .res-grid{display:grid;grid-template-columns:1fr 1fr;margin:0 12px 10px;border-radius:5px;overflow:hidden;border:1px solid var(--border2);}
+    .res-card{padding:10px 12px;background:rgba(0,0,0,.3);border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .res-card:nth-child(even){border-right:none;}
+    .res-card:nth-child(3),.res-card:nth-child(4){border-bottom:none;}
+    .rc-lbl{font-family:var(--mono);font-size:11px;color:#a0c4e0;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;font-weight:600;}
+    .rc-val{font-family:var(--title);font-size:20px;font-weight:700;color:var(--cyan);}
+    .rc-val.g{color:var(--green);}
+    .rc-val.a{color:var(--amber);}
+    .rc-val.y{color:var(--yellow);}
+    .rc-sub{font-size:13px;color:var(--text2);margin-top:2px;}
+
+    /* BILAN */
+    .bilan-table{margin:0 12px 10px;border:1px solid var(--border2);border-radius:5px;overflow:hidden;}
+    .bilan-row{display:grid;grid-template-columns:20px 1fr auto auto;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;align-items:center;}
+    .bilan-row:last-child{border-bottom:none;}
+    .bilan-hdr{background:var(--panel2);font-family:var(--mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+    .bilan-coverage{margin:0 12px 10px;background:#05080f;border:1px solid var(--border2);border-radius:5px;padding:12px;}
+    .bilan-pct{font-family:var(--title);font-size:32px;font-weight:700;color:var(--green);text-align:center;}
+    .bilan-bar-track{height:8px;background:var(--border2);border-radius:4px;overflow:hidden;margin:8px 0;}
+    .bilan-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:4px;transition:width .6s;}
+
+    /* ACTIONS */
+    .act-bar{padding:12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .btn-calc{padding:14px;border:none;border-radius:5px;cursor:pointer;font-family:var(--title);font-size:17px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:all .25s;background:linear-gradient(135deg,#0a7a5a,#00a070);color:#fff;box-shadow:0 4px 18px rgba(0,160,112,.3);}
+    .btn-calc:hover:not(:disabled){background:linear-gradient(135deg,#0a9a70,#00c088);transform:translateY(-1px);}
+    .btn-calc:disabled{background:var(--panel2);color:var(--text3);box-shadow:none;cursor:not-allowed;}
+    .btn-secondary{padding:10px;border-radius:5px;cursor:pointer;transition:all .2s;font-family:var(--title);font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid var(--border2);color:var(--text3);}
+    .btn-secondary:hover{border-color:var(--red);color:var(--red);}
+    .btn-export{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px;}
+    .btn-exp{background:transparent;border:1px solid var(--border2);border-radius:4px;padding:9px;color:var(--text2);font-size:13px;font-family:var(--title);cursor:pointer;letter-spacing:1px;transition:all .2s;}
+    .btn-exp:hover{border-color:var(--amber);color:var(--amber);}
+
+    /* LÉGENDE */
+    .legend{padding:10px 12px 14px;}
+    .leg-item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14px;color:var(--text2);border-bottom:1px solid rgba(21,34,52,.8);}
+    .leg-item:last-child{border-bottom:none;}
+
+    /* CARTE */
+    #map-view{flex:1;position:relative;overflow:hidden;min-width:0;max-width:100%;height:100%;}
+    #map-view .esri-view{height:100%!important;width:100%!important;}
+    #map-view .esri-view-surface{height:100%!important;width:100%!important;}
+    .esri-ui-corner{z-index:150;}
+    #map-view.picking{cursor:crosshair;}
+    #pick-banner{display:none;position:absolute;top:16px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--amber-d),var(--amber));color:#000;font-family:var(--title);font-size:15px;font-weight:700;letter-spacing:4px;text-transform:uppercase;padding:10px 26px;border-radius:4px;z-index:999;pointer-events:none;animation:bpulse .7s ease-in-out infinite;}
+    @keyframes bpulse{0%,100%{box-shadow:0 4px 16px rgba(232,160,32,.4)}50%{box-shadow:0 4px 28px rgba(232,160,32,.8)}}
+    #pick-banner.visible{display:block;}
+    #mouse-coords{position:absolute;bottom:34px;left:12px;background:rgba(5,8,15,.92);color:var(--cyan);font-family:var(--mono);font-size:13px;padding:6px 14px;border-radius:3px;z-index:99;pointer-events:none;border:1px solid var(--border2);}
+    .map-btn{position:absolute;right:12px;z-index:200;background:rgba(5,8,15,0.92);border:1px solid var(--border3);border-radius:6px;padding:9px 16px;color:var(--cyan);font-family:var(--title);font-size:14px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,0.5);}
+    .map-btn:hover{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,200,224,.3);}
+    #btn-windy{top:56px;}
+    #btn-meteo{top:12px;}
+    /* Panneau Windy intégré */
+    #windy-panel{
+      display:none;position:absolute;top:0;right:0;bottom:0;
+      width:55%;z-index:300;flex-direction:column;
+      border-left:2px solid var(--amber);
+      box-shadow:-4px 0 20px rgba(0,0,0,0.6);
+    }
+    #windy-panel.visible{display:flex;}
+    #windy-panel-header{
+      display:flex;align-items:center;gap:10px;
+      background:rgba(5,8,15,0.97);border-bottom:1px solid var(--border2);
+      padding:8px 14px;flex-shrink:0;
+    }
+    #windy-panel-header span{font-family:var(--title);font-size:14px;font-weight:700;color:var(--amber);letter-spacing:2px;text-transform:uppercase;flex:1;}
+    #windy-panel-header button{background:transparent;border:1px solid var(--border2);border-radius:4px;color:var(--text2);cursor:pointer;padding:4px 10px;font-size:13px;transition:all .2s;}
+    #windy-panel-header button:hover{border-color:var(--red);color:var(--red);}
+    #windy-container{flex:1;min-height:0;}
+    .windy-layer-btns{display:flex;gap:6px;margin-left:auto;}
+    .windy-layer-btn{background:rgba(30,51,80,0.9);border:1px solid var(--border2);border-radius:4px;color:var(--text2);cursor:pointer;padding:4px 10px;font-size:12px;font-family:var(--mono);transition:all .2s;}
+    .windy-layer-btn.active{border-color:var(--cyan);color:var(--cyan);}
+    .windy-layer-btn:hover{border-color:var(--amber);color:var(--amber);}
+
+    @media print{
+      .sidebar,#btn-windy,#btn-meteo,#mouse-coords,#pick-banner{display:none!important;}
+      #map-view{width:100vw!important;height:100vh!important;}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="h-emblem">⚓</div>
+  <div style="display:flex;flex-direction:column;gap:1px;">
+    <div class="h-t1">Opération Search &amp; Rescue</div>
+    <div class="h-t2">Nouvelle-Calédonie</div>
+  </div>
+  <div class="h-sep"></div>
+  <div class="h-zpa">Aide à la Décision SAR</div>
+  <div class="h-right">
+    <div class="h-badge">Système de coordonnées : Lambert NC (EPSG:3163)</div>
+    <div id="utc-clock">--:--:-- (NC)</div>
+  </div>
+</header>
+
+<div class="main">
+<aside class="sidebar">
+
+  <!-- ① MODE -->
+  <div class="sec-hd"><h3>① Précision de la position</h3><div class="sec-hd-line"></div></div>
+  <div class="mode-select">
+    <button class="mode-btn" id="mode-datum" onclick="setMode('datum')">
+      <span class="mode-icon">🎯</span>
+      <div>
+        <span class="mode-title">Position précise connue</span>
+        <span class="mode-desc">Point de référence fiable — radar, SARSAT, contact radio</span>
+        <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+          <span class="mode-tag" style="display:block;width:fit-content;">Ratissage par secteur (VS)</span>
+          <span class="mode-tag" style="display:block;width:fit-content;">Ratissage en spirale carrée (SS)</span>
+        </div>
+      </div>
+    </button>
+    <button class="mode-btn" id="mode-zpa" onclick="setMode('zpa')">
+      <span class="mode-icon">🔍</span>
+      <div>
+        <span class="mode-title">Position incertaine</span>
+        <span class="mode-desc">Grande zone — disparition sans trace, autonomie inconnue</span>
+        <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
+          <span class="mode-tag" style="display:block;width:fit-content;">Ratissage longitudinal aller-retour (TSR)</span>
+          <span class="mode-tag" style="display:block;width:fit-content;">Ratissage longitudinal sens unique (TSN)</span>
+          <span class="mode-tag" style="display:block;width:fit-content;">Ratissage par passes parallèles (PS)</span>
+          <span class="mode-tag" style="display:block;width:fit-content;">Ratissage en lacets (CS)</span>
+        </div>
+      </div>
+    </button>
+  </div>
+
+  <!-- ② POINTS -->
+  <div id="points-section" style="display:none">
+    <div class="sec-hd"><h3 id="points-title">② Points de référence</h3><div class="sec-hd-line"></div></div>
+    <div class="pt-block" id="block-a">
+      <div class="pt-hd">
+        <div class="pt-dot dot-a">A</div>
+        <div class="pt-lbl"><strong id="label-a">Dernière position signalée</strong><span id="sublabel-a">Point de départ</span></div>
+        <span class="pt-status" id="status-a">NON DÉFINI</span>
+      </div>
+      <div class="pt-coords">
+        <div class="cf"><label>X Est — Mètre</label><input type="number" id="ax" placeholder="368500" step="1"/></div>
+        <div class="cf"><label>Y Nord — Mètre</label><input type="number" id="ay" placeholder="-755200" step="1"/></div>
+      </div>
+      <button class="btn-pick" id="pick-a-btn" onclick="startPick('A')">🎯 Placer sur la carte</button>
+    </div>
+    <div class="pt-block" id="block-b">
+      <div class="pt-hd">
+        <div class="pt-dot dot-b">B</div>
+        <div class="pt-lbl"><strong>Dernière position estimée</strong><span>Point de comptage</span></div>
+        <span class="pt-status" id="status-b">NON DÉFINI</span>
+      </div>
+      <div class="pt-coords">
+        <div class="cf"><label>X Est — Mètre</label><input type="number" id="bx" placeholder="390000" step="1"/></div>
+        <div class="cf"><label>Y Nord — Mètre</label><input type="number" id="by" placeholder="-755200" step="1"/></div>
+      </div>
+      <button class="btn-pick" id="pick-b-btn" onclick="startPick('B')">🎯 Placer sur la carte</button>
+    </div>
+  </div>
+
+  <!-- ③ SCHÉMA -->
+  <div id="schema-section" style="display:none">
+    <div class="sec-hd"><h3>③ Schéma de recherche</h3><div class="sec-hd-line"></div></div>
+    <div class="schema-grid" id="schema-grid"></div>
+    <div id="schema-params" style="display:none">
+      <!-- SS -->
+      <div id="params-ss" class="schema-params-inner" style="display:none">
+        <div class="param-box">
+          <div class="param-box-lbl">Direction du vent</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="env-field">
+              <div class="env-lbl">Direction</div>
+              <select title="Direction vers laquelle souffle le vent. La 1ère passe de la spirale est effectuée dans ce sens." id="ss-wind-dir" onchange="updateSSCap()">
+                <option value="0">N — Nord</option><option value="22.5">NNE</option>
+                <option value="45">NE — Nord-Est</option><option value="67.5">ENE</option>
+                <option value="90">E — Est</option><option value="112.5">ESE</option>
+                <option value="135">SE — Sud-Est</option><option value="157.5">SSE</option>
+                <option value="180">S — Sud</option><option value="202.5">SSO</option>
+                <option value="225">SO — Sud-Ouest</option><option value="247.5">OSO</option>
+                <option value="270">O — Ouest</option><option value="292.5">ONO</option>
+                <option value="315">NO — Nord-Ouest</option><option value="337.5">NNO</option>
+              </select>
+            </div>
+            <div class="env-field">
+              <div class="env-lbl">Cap 1ère passe</div>
+              <div id="ss-cap" style="color:var(--amber);font-family:var(--mono);font-size:14px;margin-top:2px;">180°</div>
+            </div>
+          </div>
+          <button class="btn-pick" style="margin:0;padding:8px;font-size:12px;" onclick="startPick('WIND')">🌬 Cliquer carte : point → Datum = direction vent</button>
+        </div>
+      </div>
+      <!-- VS -->
+      <div id="params-vs" class="schema-params-inner" style="display:none">
+        <div class="param-box">
+          <div class="param-box-lbl">Zone de ratissage sectorielle</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="env-field">
+              <div class="env-lbl">Type de moyen</div>
+              <select id="vs-type" onchange="updateVSRadius()">
+                <option value="aerial">Aéronef (5-20 Nm)</option>
+                <option value="vessel">Navire (2-5 Nm)</option>
+              </select>
+            </div>
+            <div class="env-field">
+              <div class="env-lbl">Rayon (Nm)</div>
+              <input type="number" id="vs-radius" value="10" min="2" max="20" step="1" onchange="updateVSCircle()"/>
+            </div>
+          </div>
+          <div class="param-info">Le cercle de ratissage s'affiche sur la carte. Cliquez sur le cercle pour placer le CSP — la 1ère jambe part du CSP vers le Datum, puis 2 jambes à 120° (tribord).</div>
+          <button class="btn-pick" id="pick-csp-btn" style="margin:0;padding:8px;font-size:12px;" onclick="startPick('CSP')">🎯 Cliquer sur le cercle pour placer le CSP</button>
+          <div id="csp-status" style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:6px;text-align:center;">CSP non défini</div>
+        </div>
+      </div>
+      <!-- TSR -->
+      <div id="params-tsr" class="schema-params-inner" style="display:none">
+        <div class="param-info">Axe A→B · 1 passe à ½S au-dessus + 1 passe à ½S en dessous · Retour par l'axe</div>
+      </div>
+      <!-- TSN -->
+      <div id="params-tsn" class="schema-params-inner" style="display:none">
+        <div class="param-info">Axe A→B · 1 passe à S au-dessus + 1 passe à S en dessous · Sans retour</div>
+      </div>
+      <!-- PS -->
+      <div id="params-ps" class="schema-params-inner" style="display:none">
+        <div class="param-info">CSP au coin de la ZPA (½S des deux bords) · Passes parallèles au grand axe · Sous-zone par moyen</div>
+      </div>
+      <!-- CS -->
+      <div id="params-cs" class="schema-params-inner" style="display:none">
+        <div class="param-info">Navire suit l'axe A→B · Aéronef fait des passes perpendiculaires · Vitesse navire calculée automatiquement</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ ENVIRONNEMENT -->
+  <div id="env-section" style="display:none">
+    <div class="sec-hd"><h3>④ Facteurs environnementaux</h3><div class="sec-hd-line"></div></div>
+    <div class="env-grid">
+      <div class="env-field"><div class="env-lbl">Visibilité</div>
+        <select title="Visibilité : influence directement la largeur de détection W. Excellente = ciel dégagé, mer calme." id="env-vis" oninput="computePOD()">
+          <option value="1.0">Excellente (&gt;10 km)</option>
+          <option value="0.8" selected>Bonne (5-10 km)</option>
+          <option value="0.6">Réduite (2-5 km)</option>
+          <option value="0.4">Mauvaise (&lt;2 km)</option>
+          <option value="0.2">Nulle</option>
+        </select>
+      </div>
+      <div class="env-field"><div class="env-lbl">Relief</div>
+        <select title="Relief : les obstacles réduisent la détection. Mer = facteur 1.0, Montagne = facteur 0.5." id="env-relief" oninput="computePOD()">
+          <option value="1.0">Mer</option>
+          <option value="0.9">Terrain plat</option>
+          <option value="0.7">Collines</option>
+          <option value="0.5">Montagne</option>
+        </select>
+      </div>
+      <div class="env-field"><div class="env-lbl">Vent (kt)</div>
+        <input type="number" id="env-wind" value="0" min="0" step="1" oninput="computePOD();computeDrift()"/>
+      </div>
+      <div class="env-field"><div class="env-lbl">Dérive par courant (kt)</div>
+        <input type="number" id="env-current" value="0" min="0" step="0.5" oninput="computeDrift()"/>
+      </div>
+      <div class="env-field" style="grid-column:span 2">
+        <div class="env-lbl">Dérive totale estimée (courant + leeway 3% vent)</div>
+        <div style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-top:4px;">
+          <input type="number" id="drift-time" value="1" min="0" max="24" step="0.5" oninput="computeDrift()" style="width:55px;background:transparent;border:1px solid var(--border2);border-radius:3px;color:var(--cyan);font-family:var(--mono);font-size:13px;outline:none;padding:3px 5px;"/>
+          <span style="color:var(--text3);font-size:12px;">h → Dérive totale :</span>
+          <span id="drift-result" style="color:var(--amber);font-family:var(--mono);font-size:15px;font-weight:600;">0.0 Nm</span>
+        </div>
+        <div id="drift-detail" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;text-align:right;">Courant 0.0 + Leeway 0.0 Nm</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ DÉTECTION -->
+  <div id="detection-section" style="display:none">
+    <div class="sec-hd"><h3>⑤ Paramètres de détection</h3><div class="sec-hd-line"></div></div>
+    <div class="env-grid">
+      <div class="env-field"><div class="env-lbl">Largeur W (Nm)</div><input type="number" id="det-W" value="0" min="0" max="20" step="0.1" oninput="computePOD()"/></div>
+      <div class="env-field"><div class="env-lbl">Espacement S (Nm)</div><input type="number" id="det-S" value="0" min="0" max="20" step="0.1" oninput="computePOD()"/></div>
+      <div class="env-field"><div class="env-lbl">Prob. Zone POA (%)</div><input type="number" id="det-POA" value="70" min="1" max="100" step="1" oninput="computePOD()"/></div>
+      <div class="env-field"><div class="env-lbl">Facteur C</div><div id="c-val" style="color:var(--amber);font-family:var(--mono);font-size:15px;margin-top:3px;">—</div></div>
+    </div>
+    <div class="c-bar-wrap">
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text3);"><span>Couverture</span><span id="c-pct">—</span></div>
+      <div class="c-bar-track"><div class="c-bar-fill" id="c-bar" style="width:0%"></div></div>
+      <div class="c-msg" id="c-msg">—</div>
+    </div>
+    <div class="pod-grid">
+      <div class="pod-card" style="border-color:var(--green)"><div class="pod-val" id="pod-val" style="color:var(--green)">—</div><div class="pod-lbl" style="color:var(--green)">POD</div><div class="pod-desc">Prob. Détection</div></div>
+      <div class="pod-card" style="border-color:var(--amber)"><div class="pod-val" id="poa-val" style="color:var(--amber)">—</div><div class="pod-lbl" style="color:var(--amber)">POA</div><div class="pod-desc">Prob. de Zone</div></div>
+      <div class="pod-card" style="border-color:var(--yellow)"><div class="pod-val" id="pos-val" style="color:var(--yellow)">—</div><div class="pod-lbl" style="color:var(--yellow)">POS</div><div class="pod-desc">Prob. Succès</div></div>
+    </div>
+  </div>
+
+  <!-- ⑥ MOYENS -->
+  <div id="moyens-section" style="display:none">
+    <div class="sec-hd"><h3>⑥ Moyens engagés</h3><div class="sec-hd-line"></div></div>
+    <div id="moyens-list"></div>
+    <button class="btn-add-moyen" onclick="addMoyen()">+ Ajouter un moyen</button>
+  </div>
+
+  <!-- RÉSULTATS (ZPA seulement) -->
+  <div id="results-header" style="display:none">
+    <div class="sec-hd"><h3>📊 Résultats ZPA</h3><div class="sec-hd-line"></div></div>
+    <div class="res-grid">
+      <div class="res-card"><div class="rc-lbl">Distance A → B</div><div class="rc-val g" id="res-D">—</div><div class="rc-sub" id="res-D-km"></div></div>
+      <div class="res-card"><div class="rc-lbl">Rayon cercle A</div><div class="rc-val" id="res-Ra">—</div><div class="rc-sub" id="res-Ra-km"></div></div>
+      <div class="res-card"><div class="rc-lbl">Rayon cercle B</div><div class="rc-val a" id="res-Rb">—</div><div class="rc-sub" id="res-Rb-km"></div></div>
+      <div class="res-card"><div class="rc-lbl">Surface ZPA</div><div class="rc-val y" id="res-area">—</div></div>
+    </div>
+  </div>
+
+  <!-- BILAN MOYENS -->
+  <div id="bilan-section" style="display:none">
+    <div class="sec-hd"><h3>📋 Bilan des moyens</h3><div class="sec-hd-line"></div></div>
+    <div class="bilan-table" id="bilan-table"></div>
+    <div class="bilan-coverage">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Taux de couverture global</div>
+      <div class="bilan-pct" id="bilan-pct">—</div>
+      <div class="bilan-bar-track"><div class="bilan-bar-fill" id="bilan-bar" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);">
+        <span>Couvert : <span id="bilan-covered" style="color:var(--green)">—</span></span>
+        <span>ZPA : <span id="bilan-total" style="color:var(--text2)">—</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="act-bar" id="actions-bar" style="display:none">
+    <button class="btn-calc" id="btn-calc" onclick="calculateZPA()" disabled>⚡ <span id="calc-label">Calculer la ZPA</span></button>
+    <button class="btn-secondary" onclick="resetAll()">✕ Réinitialiser</button>
+  </div>
+
+  <!-- EXPORT -->
+  <div id="export-section" style="display:none">
+    <div class="sec-hd"><h3>📤 Export</h3><div class="sec-hd-line"></div></div>
+    <div class="btn-export">
+      <button class="btn-exp" onclick="printPlan()">🖨 Imprimer</button>
+      <button class="btn-exp" onclick="exportPlan()">⬇ Exporter JSON</button>
+    </div>
+  </div>
+
+  <!-- LÉGENDE -->
+  <div id="legend-header" style="display:none">
+    <div class="sec-hd"><h3>🗺 Légende</h3><div class="sec-hd-line"></div></div>
+    <div class="legend" id="legend-content"></div>
+  </div>
+
+</aside>
+
+<div id="map-view">
+  <div id="pick-banner">📍 <span id="pick-label">Point A</span></div>
+  <div id="mouse-coords">Lon: — | Lat: —</div>
+  <button class="map-btn" id="btn-meteo" onclick="openWindyPanel('wind')">💨 Vents</button>
+  <button class="map-btn" id="btn-windy" onclick="openWindyPanel('currents')">🌊 Courants</button>
+  <!-- Panneau Windy intégré -->
+  <div id="windy-panel">
+    <div id="windy-panel-header">
+      <span id="windy-panel-title">🌊 Windy — Météo NC</span>
+      <div class="windy-layer-btns">
+        <button class="windy-layer-btn" id="wbtn-wind" onclick="switchWindyLayer('wind')">💨 Vent</button>
+        <button class="windy-layer-btn" id="wbtn-currents" onclick="switchWindyLayer('currents')">🌊 Courants</button>
+        <button class="windy-layer-btn" id="wbtn-waves" onclick="switchWindyLayer('waves')">🌀 Vagues</button>
+      </div>
+      <button onclick="closeWindyPanel()">✕ Fermer</button>
+    </div>
+    <div id="windy-container"></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══ HORLOGE NC ═══
+function updateClock(){
+  const nc=new Date(Date.now()+11*3600000);
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('utc-clock').textContent=`${p(nc.getUTCHours())}:${p(nc.getUTCMinutes())}:${p(nc.getUTCSeconds())} (NC)`;
+}
+setInterval(updateClock,1000);updateClock();
+
+// ═══ LAMBERT NC ↔ WGS84 ═══
+const LNC={a:6378137.0,e2:0.00669437999014,lat0:-22.2312162963*Math.PI/180,lon0:166.044443889*Math.PI/180,lat1:-20.6666666667*Math.PI/180,lat2:-23.7999999999*Math.PI/180,x0:400000,y0:300000};
+(function(){
+  const e=Math.sqrt(LNC.e2);
+  const m=l=>Math.cos(l)/Math.sqrt(1-LNC.e2*Math.sin(l)**2);
+  const t=l=>{const s=Math.sin(l);return Math.tan(Math.PI/4-l/2)/((1-e*s)/(1+e*s))**(e/2);};
+  const m1=m(LNC.lat1),m2=m(LNC.lat2),t1=t(LNC.lat1),t2=t(LNC.lat2),t0=t(LNC.lat0);
+  LNC.n=Math.log(m1/m2)/Math.log(t1/t2);LNC.F=m1/(LNC.n*t1**LNC.n);LNC.r0=LNC.a*LNC.F*t0**LNC.n;LNC._e=e;LNC._t=t;
+})();
+function lnc2wgs(x,y){
+  const e=LNC._e,xp=x-LNC.x0,yp=LNC.r0-(y-LNC.y0);
+  const r=Math.sign(LNC.n)*Math.hypot(xp,yp),th=Math.atan2(Math.sign(LNC.n)*xp,Math.sign(LNC.n)*yp);
+  const t_=(r/(LNC.a*LNC.F))**(1/LNC.n);
+  let lat=Math.PI/2-2*Math.atan(t_);
+  for(let i=0;i<10;i++){const s=Math.sin(lat);lat=Math.PI/2-2*Math.atan(t_*((1-e*s)/(1+e*s))**(e/2));}
+  return [(th/LNC.n+LNC.lon0)*180/Math.PI,lat*180/Math.PI];
+}
+function wgs2lnc(lon,lat){
+  const lonR=lon*Math.PI/180,latR=lat*Math.PI/180;
+  const t_=LNC._t(latR),r=LNC.a*LNC.F*t_**LNC.n,th=LNC.n*(lonR-LNC.lon0);
+  return [LNC.x0+r*Math.sin(th),LNC.y0+LNC.r0-r*Math.cos(th)];
+}
+const toWGS84=(x,y)=>lnc2wgs(x,y);
+const fromWGS84=(lon,lat)=>wgs2lnc(lon,lat);
+
+// ═══ ÉTAT ═══
+const NM=1852,RA_NM=10;
+let mapView,gl,pickingPoint=null;
+let ptA=null,ptB=null,ptCSP=null,ptWind=null;
+let mA=[],mB=[],mCSP_markers=[];
+let mode=null,schema=null;
+let moyens=[],moyenId=0;
+let vsCircleGraphic=null;
+const MOYEN_TYPES=[
+  {label:'Hélicoptère',icon:'🚁',vDef:120,wDef:0.5},
+  {label:'Avion fixe',icon:'✈️',vDef:180,wDef:1.0},
+  {label:'Navire militaire',icon:'⚓',vDef:15,wDef:0.3},
+  {label:'Navire civil',icon:'🚢',vDef:10,wDef:0.2},
+  {label:'Embarcation légère',icon:'⛵',vDef:8,wDef:0.15},
+];
+const moyenColors=['#00d4a0','#e8a020','#00c8e0','#ffd166','#e03040','#a78bfa'];
+const SCHEMAS={
+  datum:[
+    {code:'SS',name:'Spirale carrée',desc:'1 moyen, position précise, vent connu'},
+    {code:'VS',name:'Recherche sectorielle',desc:'Hélico/navire, 3 jambes à 120°, tribord'}
+  ],
+  zpa:[
+    {code:'TSR',name:'Longitudinal A/R',desc:'Aéronef, route connue, aller-retour'},
+    {code:'TSN',name:'Longitudinal sans retour',desc:'Aéronef, route connue, sens unique'},
+    {code:'PS', name:'Balayage parallèle',desc:'Multi-moyens, grande zone'},
+    {code:'CS', name:'Balayage en lacets',desc:'Avion + navire coordonnés'}
+  ]
+};
+
+// ═══ SS : direction vent ═══
+window.updateSSCap=function(){
+  const dir=parseFloat(document.getElementById('ss-wind-dir').value)||0;
+  // La 1ère passe est dans le sens du vent (même direction)
+  document.getElementById('ss-cap').textContent=Math.round(dir)+'°';
+};
+
+window.updateVSRadius=function(){
+  const t=document.getElementById('vs-type').value;
+  const r=document.getElementById('vs-radius');
+  if(t==='aerial'){r.min=5;r.max=20;if(parseFloat(r.value)<5)r.value=10;}
+  else{r.min=2;r.max=5;if(parseFloat(r.value)>5)r.value=3;}
+  updateVSCircle();
+};
+
+window.updateVSCircle=function(){
+  if(!ptA||schema!=='VS')return;
+  const r=parseFloat(document.getElementById('vs-radius').value||10)*NM;
+  if(vsCircleGraphic&&gl)gl.remove(vsCircleGraphic);
+  if(!gl)return;
+  const poly=makeCircle(ptA.x,ptA.y,r);
+  vsCircleGraphic=new window._GR({geometry:poly,symbol:new window._SFS({color:[0,200,224,20],outline:{color:[0,200,224,200],width:2,style:"dash"}})});
+  gl.add(vsCircleGraphic);
+};
+
+// ═══ MODE ═══
+window.setMode=function(m){
+  mode=m;schema=null;ptCSP=null;ptWind=null;
+  document.getElementById('mode-datum').classList.toggle('active',m==='datum');
+  document.getElementById('mode-zpa').classList.toggle('active',m==='zpa');
+  if(m==='datum'){
+    document.getElementById('label-a').textContent='Datum';
+    document.getElementById('sublabel-a').textContent='Point de référence — position connue avec précision';
+    document.getElementById('block-b').style.display='none';
+    document.getElementById('points-title').textContent='② Saisie du Datum';
+    document.getElementById('calc-label').textContent='Lancer la recherche';
+    document.getElementById('results-header').style.display='none';
+  } else {
+    document.getElementById('label-a').textContent='Dernière position signalée';
+    document.getElementById('sublabel-a').textContent='Point de départ';
+    document.getElementById('block-b').style.display='block';
+    document.getElementById('points-title').textContent='② Points de référence';
+    document.getElementById('calc-label').textContent='Calculer la ZPA';
+  }
+  ['points-section','schema-section','env-section','detection-section','moyens-section','actions-bar'].forEach(id=>{
+    document.getElementById(id).style.display='block';
+  });
+  const grid=document.getElementById('schema-grid');
+  grid.innerHTML='';
+  SCHEMAS[m].forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className='schema-btn';btn.title=s.desc;
+    btn.innerHTML=`<div class="schema-code">${s.code}</div><div class="schema-name">${s.name}</div>`;
+    btn.onclick=()=>selectSchema(s.code,btn);
+    grid.appendChild(btn);
+  });
+  updateCalcBtn();
+};
+
+window.selectSchema=function(code,btn){
+  schema=code;ptCSP=null;
+  document.querySelectorAll('.schema-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('schema-params').style.display='block';
+  ['ss','vs','tsr','tsn','ps','cs'].forEach(s=>{
+    const el=document.getElementById('params-'+s);
+    if(el)el.style.display=(code.toLowerCase()===s)?'block':'none';
+  });
+  if(code==='VS'&&ptA)updateVSCircle();
+  document.getElementById('csp-status')&&(document.getElementById('csp-status').textContent='CSP non défini');
+  updateCalcBtn();
+};
+
+function updateCalcBtn(){
+  const needsCSP=schema==='VS';
+  const ok=mode&&schema&&ptA&&(mode==='datum'||ptB)&&(!needsCSP||ptCSP);
+  document.getElementById('btn-calc').disabled=!ok;
+}
+
+// ═══ ENVIRONNEMENT ═══
+window.computeDrift=function(){
+  const t=parseFloat(document.getElementById('drift-time').value)||0;
+  const c=parseFloat(document.getElementById('env-current').value)||0;
+  const w=parseFloat(document.getElementById('env-wind').value)||0;
+  const leeway=0.03*w; // 3% de la vitesse du vent
+  const totalDrift=(c+leeway)*t;
+  const el=document.getElementById('drift-result');
+  el.textContent=totalDrift.toFixed(1)+' Nm';
+  // Détail du calcul
+  const detail=document.getElementById('drift-detail');
+  if(detail){
+    detail.textContent=`Courant ${(c*t).toFixed(1)} + Leeway ${(leeway*t).toFixed(1)} Nm`;
+  }
+};
+
+window.computePOD=function(){
+  const W=parseFloat(document.getElementById('det-W').value)||0;
+  const S=parseFloat(document.getElementById('det-S').value)||0;
+  const POA=(parseFloat(document.getElementById('det-POA').value)||70)/100;
+  const vis=parseFloat(document.getElementById('env-vis').value)||0.8;
+  const relief=parseFloat(document.getElementById('env-relief').value)||1.0;
+  if(!W||!S){
+    ['c-val','pod-val','poa-val','pos-val','c-pct','c-msg'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.textContent='—';
+    });
+    document.getElementById('c-bar').style.width='0%';
+    return;
+  }
+  const Weff=W*vis*relief;
+  const C=S/Weff;
+  const POD=1-Math.exp(-1/C);
+  const POS=POD*POA;
+  document.getElementById('c-val').textContent=C.toFixed(2);
+  document.getElementById('pod-val').textContent=Math.round(POD*100)+'%';
+  document.getElementById('poa-val').textContent=Math.round(POA*100)+'%';
+  document.getElementById('pos-val').textContent=Math.round(POS*100)+'%';
+  const pct=Math.min(100,Math.round(100/C));
+  document.getElementById('c-pct').textContent=`C = ${C.toFixed(2)}`;
+  const bar=document.getElementById('c-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=C<0.5?'#00c8e0':C<1?'#00d4a0':C<2?'#e8a020':'#e03040';
+  const msg=document.getElementById('c-msg');
+  if(C<0.5){msg.textContent='★ Couverture optimale';msg.style.color='var(--cyan)';}
+  else if(C<1){msg.textContent='✓ Bonne couverture';msg.style.color='var(--green)';}
+  else if(C<2){msg.textContent='⚠ Couverture partielle';msg.style.color='var(--amber)';}
+  else{msg.textContent='✗ Couverture insuffisante';msg.style.color='var(--red)';}
+};
+
+// ═══ MOYENS ═══
+window.addMoyen=function(){
+  moyenId++;
+  const id=moyenId;
+  const color=moyenColors[(id-1)%moyenColors.length];
+  moyens.push({id,type:0,callsign:'',vitesse:0,W:0,temps:0,color});
+  renderMoyens();
+};
+function renderMoyens(){
+  const list=document.getElementById('moyens-list');list.innerHTML='';
+  moyens.forEach((m,i)=>{
+    const surf=(m.vitesse*m.W*m.temps).toFixed(0);
+    const div=document.createElement('div');div.className='moyen-block';
+    div.innerHTML=`<div class="moyen-hd">
+      <div class="moyen-num" style="background:${m.color};color:#000;">${i+1}</div>
+      <span style="font-family:var(--title);font-size:14px;color:var(--text);margin-left:4px;">${MOYEN_TYPES[m.type].icon} ${m.callsign||'Moyen '+(i+1)}</span>
+      <button class="btn-del-moyen" onclick="deleteMoyen(${m.id})">✕</button>
+    </div>
+    <div class="moyen-body">
+      <div class="moyen-grid">
+        <div class="moyen-field" style="grid-column:span 2">
+          <div class="moyen-lbl">Type</div>
+          <select onchange="updateMoyen(${m.id},'type',this.value)">
+            ${MOYEN_TYPES.map((t,ti)=>`<option value="${ti}" ${ti===m.type?'selected':''}>${t.icon} ${t.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="moyen-field" style="grid-column:span 2">
+          <div class="moyen-lbl">Indicatif / Callsign</div>
+          <input type="text" value="${m.callsign}" placeholder="ex: PUMA 01" onchange="updateMoyen(${m.id},'callsign',this.value)"/>
+        </div>
+        <div class="moyen-field"><div class="moyen-lbl">Vitesse (kt)</div><input type="number" value="${m.vitesse}" min="0" onchange="updateMoyen(${m.id},'vitesse',this.value)"/></div>
+        <div class="moyen-field"><div class="moyen-lbl">Largeur W (Nm)</div><input type="number" value="${m.W}" min="0" step="0.1" onchange="updateMoyen(${m.id},'W',this.value)"/></div>
+        <div class="moyen-field"><div class="moyen-lbl">Temps dispo (h)</div><input type="number" value="${m.temps}" min="0" step="0.5" onchange="updateMoyen(${m.id},'temps',this.value)"/></div>
+        <div class="moyen-field"><div class="moyen-lbl">Surface (Nm²)</div>
+          <div style="color:${m.color};font-family:var(--mono);font-size:14px;font-weight:600;margin-top:3px;">${surf}</div>
+        </div>
+      </div>
+    </div>`;
+    list.appendChild(div);
+  });
+}
+window.updateMoyen=function(id,field,val){
+  const m=moyens.find(m=>m.id===id);if(!m)return;
+  if(field==='type'){m.type=parseInt(val);}
+  else if(field==='vitesse')m.vitesse=parseFloat(val)||0;
+  else if(field==='W')m.W=parseFloat(val)||0;
+  else if(field==='temps')m.temps=parseFloat(val)||0;
+  else if(field==='callsign')m.callsign=val;
+  renderMoyens();
+};
+window.deleteMoyen=function(id){moyens=moyens.filter(m=>m.id!==id);renderMoyens();};
+
+// ═══ LÉGENDE DYNAMIQUE ═══
+function updateLegend(){
+  const items=[];
+  if(mode==='zpa'||ptA){
+    items.push({svg:`<svg width="22" height="22"><circle cx="11" cy="11" r="5" fill="#00d4a0"/><line x1="3" y1="11" x2="19" y2="11" stroke="white" stroke-width="1.5"/><line x1="11" y1="3" x2="11" y2="19" stroke="white" stroke-width="1.5"/></svg>`,txt:mode==='datum'?'Datum – Position connue':'Point A – Dernière position signalée'});
+  }
+  if(mode==='zpa'&&ptB){
+    items.push({svg:`<svg width="22" height="22"><circle cx="11" cy="11" r="5" fill="#e8a020"/><line x1="3" y1="11" x2="19" y2="11" stroke="white" stroke-width="1.5"/><line x1="11" y1="3" x2="11" y2="19" stroke="white" stroke-width="1.5"/></svg>`,txt:'Point B – Dernière position estimée'});
+    items.push({svg:`<svg width="26" height="16"><ellipse cx="13" cy="8" rx="11" ry="6" fill="none" stroke="#00d4a0" stroke-width="2" stroke-dasharray="4,2"/></svg>`,txt:'Cercle R = 10 Nm (autour de A)'});
+    items.push({svg:`<svg width="26" height="16"><ellipse cx="13" cy="8" rx="11" ry="6" fill="none" stroke="#e8a020" stroke-width="2" stroke-dasharray="4,2"/></svg>`,txt:'Cercle R = 10 Nm + 10%·D (autour de B)'});
+    items.push({svg:`<svg width="26" height="16"><rect x="2" y="2" width="22" height="12" fill="rgba(0,200,224,0.3)" stroke="#00c8e0" stroke-width="1.5"/></svg>`,txt:'ZPA – Zone de Probabilité d\'Accident'});
+    items.push({svg:`<svg width="26" height="16"><line x1="2" y1="8" x2="24" y2="8" stroke="white" stroke-width="1.5" stroke-dasharray="3,2"/></svg>`,txt:'D – Distance entre A et B'});
+  }
+  if(mode==='datum'){
+    items.push({svg:`<svg width="26" height="16"><ellipse cx="13" cy="8" rx="11" ry="6" fill="none" stroke="#00c8e0" stroke-width="2" stroke-dasharray="4,2"/></svg>`,txt:'Cercle de ratissage'});
+  }
+  if(schema){
+    items.push({svg:`<svg width="26" height="16"><line x1="2" y1="8" x2="24" y2="8" stroke="#ffd166" stroke-width="2"/></svg>`,txt:`Passes – Schéma ${schema}`});
+    if(schema==='VS'&&ptCSP){
+      items.push({svg:`<svg width="16" height="16"><polygon points="8,0 16,16 0,16" fill="#ffd166" opacity="0.8"/></svg>`,txt:'CSP – Commence Search Point'});
+    }
+    if(['PS','CS'].includes(schema)){
+      items.push({svg:`<svg width="16" height="16"><rect x="3" y="3" width="10" height="10" fill="none" stroke="#ffd166" stroke-width="1.5" stroke-dasharray="3,2"/></svg>`,txt:'Sous-zone de recherche (ZR)'});
+    }
+  }
+  const legend=document.getElementById('legend-content');
+  legend.innerHTML=items.map(it=>`<div class="leg-item">${it.svg}<span>${it.txt}</span></div>`).join('');
+}
+
+// ═══ ARCGIS ═══
+require([
+  "esri/Map","esri/views/MapView","esri/layers/GraphicsLayer",
+  "esri/Graphic","esri/geometry/Point","esri/geometry/Polygon","esri/geometry/Polyline",
+  "esri/symbols/SimpleMarkerSymbol","esri/symbols/SimpleFillSymbol",
+  "esri/symbols/SimpleLineSymbol","esri/symbols/TextSymbol",
+  "esri/widgets/ScaleBar"
+],function(Map,MapView,GL,Graphic,Point,Polygon,Polyline,SMS,SFS,SLS,TS,ScaleBar){
+
+  // Expose pour updateVSCircle
+  window._GR=Graphic;window._SFS=SFS;
+
+  const map=new Map({basemap:"satellite"});
+  gl=new GL();map.add(gl);
+  mapView=new MapView({container:"map-view",map,center:[165.5,-21.5],zoom:8});
+  mapView.when(()=>mapView.ui.add(new ScaleBar({view:mapView,unit:"metric"}),"bottom-right"));
+
+  mapView.on("pointer-move",evt=>{
+    const pt=mapView.toMap({x:evt.x,y:evt.y});if(!pt)return;
+    const [x,y]=fromWGS84(pt.longitude,pt.latitude);
+    document.getElementById('mouse-coords').textContent=`Lon ${pt.longitude.toFixed(5)}°  Lat ${pt.latitude.toFixed(5)}°  |  X ${Math.round(x)} m  Y ${Math.round(y)} m`;
+  });
+
+  mapView.on("click",evt=>{
+    if(!pickingPoint)return;
+    evt.stopPropagation();
+    const lon=evt.mapPoint.longitude,lat=evt.mapPoint.latitude;
+    const [x,y]=fromWGS84(lon,lat);
+
+    if(pickingPoint==='A'){
+      document.getElementById('ax').value=Math.round(x);
+      document.getElementById('ay').value=Math.round(y);
+      mA.forEach(g=>gl.remove(g));mA=drawCross(lon,lat,[0,212,160],'A');mA.forEach(g=>gl.add(g));
+      setPoint('A',x,y);
+      if(schema==='VS')updateVSCircle();
+    } else if(pickingPoint==='B'){
+      document.getElementById('bx').value=Math.round(x);
+      document.getElementById('by').value=Math.round(y);
+      mB.forEach(g=>gl.remove(g));mB=drawCross(lon,lat,[232,160,32],'B');mB.forEach(g=>gl.add(g));
+      setPoint('B',x,y);
+    } else if(pickingPoint==='CSP'){
+      // Snap au cercle VS
+      if(ptA&&schema==='VS'){
+        const r=parseFloat(document.getElementById('vs-radius').value||10)*NM;
+        const dx=x-ptA.x,dy=y-ptA.y;
+        const d=Math.hypot(dx,dy);
+        const sx=ptA.x+r*dx/d,sy=ptA.y+r*dy/d;
+        const [slon,slat]=toWGS84(sx,sy);
+        ptCSP={x:sx,y:sy,lon:slon,lat:slat};
+        mCSP_markers.forEach(g=>gl.remove(g));
+        const cspPt=new Point({longitude:slon,latitude:slat,spatialReference:{wkid:4326}});
+        const triSymbol=new SMS({style:"triangle",color:[255,220,0],size:12,outline:{color:[0,0,0],width:1},angle:computeCSPAngle(sx,sy,ptA.x,ptA.y)});
+        mCSP_markers=[
+          new Graphic({geometry:cspPt,symbol:triSymbol}),
+          new Graphic({geometry:cspPt,symbol:new TS({text:'CSP',color:[255,220,0],font:{size:11,weight:"bold"},yoffset:16,haloColor:[0,0,0,200],haloSize:2})})
+        ];
+        mCSP_markers.forEach(g=>gl.add(g));
+        document.getElementById('csp-status').textContent='✓ CSP défini';
+        document.getElementById('csp-status').style.color='var(--green)';
+        updateCalcBtn();
+      }
+    } else if(pickingPoint==='WIND'){
+      // Convention météo : la direction du vent = D'OÙ il vient
+      // Si on clique au SUD du datum → vent vient du SUD → afficher S (180°)
+      // La 1ère passe SS est dans le sens du vent = vers le NORD = cap 0°
+      //
+      // Vecteur du point cliqué vers le datum = direction où va le vent
+      // D'où vient le vent = direction opposée = vecteur datum → point cliqué
+      if(ptA){
+        // Vecteur datum → point cliqué (d'où vient le vent)
+        const dx = x - ptA.x; // +Est
+        const dy = y - ptA.y; // +Nord
+        // Cap météo d'où vient le vent : atan2(Est, Nord)
+        // Clic au Sud : dx=0, dy=-1 → atan2(0,-1) = 180° → S ✓
+        // Clic au Nord : dx=0, dy=+1 → atan2(0,+1) = 0°  → N ✓
+        // Clic à l'Est : dx=+1,dy=0  → atan2(+1,0) = 90° → E ✓
+        const windDir = ((Math.atan2(dx, dy) * 180 / Math.PI) + 360) % 360;
+        const dirs=[0,22.5,45,67.5,90,112.5,135,157.5,180,202.5,225,247.5,270,292.5,315,337.5];
+        const closest=dirs.reduce((a,b)=>Math.abs(b-windDir)<Math.abs(a-windDir)?b:a);
+        document.getElementById('ss-wind-dir').value=closest;
+        updateSSCap();
+      }
+    }
+    stopPick();
+  });
+
+  function computeCSPAngle(cspX,cspY,datumX,datumY){
+    return ((Math.atan2(datumY-cspY,datumX-cspX)*180/Math.PI)+360)%360;
+  }
+
+  // ─── Géométrie ───────────────────────────────────────
+  function drawCross(lon,lat,color,label){
+    const pt=new Point({longitude:lon,latitude:lat,spatialReference:{wkid:4326}});
+    return [
+      new Graphic({geometry:pt,symbol:new SMS({style:"cross",color:[255,255,255],size:12,outline:{color,width:2.5}})}),
+      new Graphic({geometry:pt,symbol:new TS({text:label,color:[255,255,255],font:{size:12,weight:"bold"},yoffset:14,haloColor:[0,0,0,220],haloSize:2})})
+    ];
+  }
+  window.makeCircle=function(cx,cy,r,steps=128){
+    const rings=[];
+    for(let i=0;i<=steps;i++){const a=2*Math.PI*i/steps;rings.push(toWGS84(cx+r*Math.cos(a),cy+r*Math.sin(a)));}
+    return new Polygon({rings:[rings],spatialReference:{wkid:4326}});
+  };
+  const makeCircle=window.makeCircle;
+
+  function buildTrapeze(ax,ay,ra,bx,by,rb){
+    const dir=Math.atan2(by-ay,bx-ax),p=dir+Math.PI/2;
+    const pts=[[ax+ra*Math.cos(p),ay+ra*Math.sin(p)],[bx+rb*Math.cos(p),by+rb*Math.sin(p)],
+               [bx-rb*Math.cos(p),by-rb*Math.sin(p)],[ax-ra*Math.cos(p),ay-ra*Math.sin(p)]];
+    return new Polygon({rings:[[...pts,pts[0]].map(([x,y])=>toWGS84(x,y))],spatialReference:{wkid:4326}});
+  }
+
+  function addArrowLine(p1,p2,color,width=1.8){
+    const [lon1,lat1]=toWGS84(...p1);
+    const [lon2,lat2]=toWGS84(...p2);
+    gl.add(new Graphic({geometry:new Polyline({paths:[[[lon1,lat1],[lon2,lat2]]],spatialReference:{wkid:4326}}),symbol:new SLS({color,width})}));
+    // Flèche au bout
+    const ang=Math.atan2(p2[1]-p1[1],p2[0]-p1[0]);
+    const arrowLen=Math.hypot(p2[0]-p1[0],p2[1]-p1[1])*0.08;
+    const a1=ang+2.7,a2=ang-2.7;
+    const [alon,alat]=toWGS84(...p2);
+    const [a1lon,a1lat]=toWGS84(p2[0]+arrowLen*Math.cos(a1),p2[1]+arrowLen*Math.sin(a1));
+    const [a2lon,a2lat]=toWGS84(p2[0]+arrowLen*Math.cos(a2),p2[1]+arrowLen*Math.sin(a2));
+    gl.add(new Graphic({geometry:new Polyline({paths:[[[alon,alat],[a1lon,a1lat]]],spatialReference:{wkid:4326}}),symbol:new SLS({color,width:width*0.8})}));
+    gl.add(new Graphic({geometry:new Polyline({paths:[[[alon,alat],[a2lon,a2lat]]],spatialReference:{wkid:4326}}),symbol:new SLS({color,width:width*0.8})}));
+  }
+
+  function addDashedLine(p1,p2,color,width=1.5){
+    const [lon1,lat1]=toWGS84(...p1);
+    const [lon2,lat2]=toWGS84(...p2);
+    gl.add(new Graphic({geometry:new Polyline({paths:[[[lon1,lat1],[lon2,lat2]]],spatialReference:{wkid:4326}}),symbol:new SLS({color,width,style:"short-dash"})}));
+  }
+
+  function addLabel(x,y,text,color=[255,255,255],size=10,yoffset=0){
+    const [lon,lat]=toWGS84(x,y);
+    const pt=new Point({longitude:lon,latitude:lat,spatialReference:{wkid:4326}});
+    gl.add(new Graphic({geometry:pt,symbol:new TS({text,color,font:{size,weight:"bold"},yoffset,haloColor:[0,0,0,200],haloSize:2})}));
+  }
+
+  // ─── Schémas ─────────────────────────────────────────
+
+  // SS — Spirale carrée
+  function drawSS(ax,ay,S_m){
+    const windDir=parseFloat(document.getElementById('ss-wind-dir').value)||0;
+    // windDir = direction où VA le vent (N=0, E=90, S=180, O=270)
+    // 1ère passe dans le sens du vent = même cap = windDir
+    const startCapRad = windDir * Math.PI / 180;
+    // Cap en Lambert NC : cap 0°=Nord=+Y, cap 90°=Est=+X
+    const capToVec=cap=>[Math.sin(cap),Math.cos(cap)];
+    const dirs=[capToVec(startCapRad),
+                capToVec(startCapRad+Math.PI/2),
+                capToVec(startCapRad+Math.PI),
+                capToVec(startCapRad+3*Math.PI/2)];
+    let x=ax,y=ay,step=S_m;
+    for(let i=0;i<16;i++){
+      const [dx,dy]=dirs[i%4];
+      const nx=x+dx*step,ny=y+dy*step;
+      addArrowLine([x,y],[nx,ny],[255,220,100,220],2);
+      x=nx;y=ny;
+      if(i%2===1)step+=S_m;
+      if(Math.hypot(x-ax,y-ay)>12*S_m)break;
+    }
+    addLabel(ax+S_m*0.1,ay+S_m*0.1,'Datum/CSP',[255,220,100],10,10);
+  }
+
+    // VS — Recherche sectorielle IAMSAR
+  // CSP → Datum → P1 (droite/diamètre)
+  // P1 → P2 (corde, virage tribord 120°)
+  // P2 → Datum → P3 (droite/diamètre)
+  // P3 → P4 (corde, virage tribord 120°)
+  // P4 → Datum → P5 (droite/diamètre)
+  // P5 → CSP (retour)
+  // ang0 = angle Datum→CSP
+  // P1 = opposé de CSP par rapport au Datum (ang0 + π)
+  // Virage tribord (sens horaire) depuis P1 de 120° → P2
+  // P3 = opposé de P2 (diamètre via Datum)
+  // Virage tribord depuis P3 de 120° → P4
+  // P5 = opposé de P4 (diamètre via Datum)
+  function drawVS(ax,ay,radius_m){
+    if(!ptCSP)return;
+    const cspX=ptCSP.x,cspY=ptCSP.y;
+    const DAT=[ax,ay];
+    const CSP=[cspX,cspY];
+
+    // ang0 = direction Datum → CSP
+    const ang0 = Math.atan2(cspY-ay, cspX-ax);
+
+    // P1 = côté opposé au CSP (diamètre complet depuis CSP passe par Datum vers P1)
+    const a1 = ang0 + Math.PI;
+    // Virage tribord = sens horaire = soustraire l'angle
+    // Depuis P1, virage tribord 120° → direction de P2
+    // En convention mathématique, tribord = sens horaire = angle décroissant
+    const a2 = a1 - 2*Math.PI/3;   // P1 tourne 120° à tribord
+    const a3 = a2 + Math.PI;        // P3 = opposé de P2 (diamètre via Datum)
+    const a4 = a3 - 2*Math.PI/3;   // P3 tourne 120° à tribord
+    const a5 = a4 + Math.PI;        // P5 = opposé de P4 (diamètre via Datum)
+
+    const P1=[ax+radius_m*Math.cos(a1), ay+radius_m*Math.sin(a1)];
+    const P2=[ax+radius_m*Math.cos(a2), ay+radius_m*Math.sin(a2)];
+    const P3=[ax+radius_m*Math.cos(a3), ay+radius_m*Math.sin(a3)];
+    const P4=[ax+radius_m*Math.cos(a4), ay+radius_m*Math.sin(a4)];
+    const P5=[ax+radius_m*Math.cos(a5), ay+radius_m*Math.sin(a5)];
+
+    // ── 1ère RECHERCHE ──
+    addArrowLine(CSP, DAT, [255,220,100,240], 2.5);
+    addArrowLine(DAT, P1,  [255,220,100,240], 2.5);
+    addArrowLine(P1,  P2,  [255,220,100,240], 2.5);
+    addArrowLine(P2,  DAT, [255,220,100,240], 2.5);
+    addArrowLine(DAT, P3,  [255,220,100,240], 2.5);
+    addArrowLine(P3,  P4,  [255,220,100,240], 2.5);
+    addArrowLine(P4,  DAT, [255,220,100,240], 2.5);
+    addArrowLine(DAT, P5,  [255,220,100,240], 2.5);
+    addArrowLine(P5,  CSP, [255,220,100,240], 2.5);
+
+    // ── 2ème RECHERCHE (décalée de 30° tribord = -30°) ──
+    const off = -Math.PI/6;
+    const Q0 = [(cspX+ax)/2, (cspY+ay)/2]; // mi-chemin CSP→Datum
+    const Q1=[ax+radius_m*Math.cos(a1+off), ay+radius_m*Math.sin(a1+off)];
+    const Q2=[ax+radius_m*Math.cos(a2+off), ay+radius_m*Math.sin(a2+off)];
+    const Q3=[ax+radius_m*Math.cos(a3+off), ay+radius_m*Math.sin(a3+off)];
+    const Q4=[ax+radius_m*Math.cos(a4+off), ay+radius_m*Math.sin(a4+off)];
+    const Q5=[ax+radius_m*Math.cos(a5+off), ay+radius_m*Math.sin(a5+off)];
+
+    addDashedLine(Q0,  DAT, [255,220,100,130], 1.5);
+    addDashedLine(DAT, Q1,  [255,220,100,130], 1.5);
+    addDashedLine(Q1,  Q2,  [255,220,100,130], 1.5);
+    addDashedLine(Q2,  DAT, [255,220,100,130], 1.5);
+    addDashedLine(DAT, Q3,  [255,220,100,130], 1.5);
+    addDashedLine(Q3,  Q4,  [255,220,100,130], 1.5);
+    addDashedLine(Q4,  DAT, [255,220,100,130], 1.5);
+    addDashedLine(DAT, Q5,  [255,220,100,130], 1.5);
+
+    // ── MARQUEURS ──
+    const [cLon,cLat]=toWGS84(cspX,cspY);
+    gl.add(new Graphic({geometry:new Point({longitude:cLon,latitude:cLat,spatialReference:{wkid:4326}}),
+      symbol:new SMS({style:"triangle",color:[255,220,0],size:14,outline:{color:[0,0,0],width:1}})}));
+    addLabel(cspX,cspY,'CSP',[255,220,100],11,18);
+    addLabel(ax,ay,'Datum',[255,255,255],11,14);
+    [[P1,'1'],[P2,'2'],[P3,'3'],[P4,'4'],[P5,'5']].forEach(([p,n])=>
+      addLabel(p[0],p[1],n,[255,220,100],10,16));
+    addLabel(ax+radius_m*0.4*Math.cos(a1-Math.PI/6),
+             ay+radius_m*0.4*Math.sin(a1-Math.PI/6),
+             '120°',[200,200,200],9,0);
+  }
+
+  // TSR — Aller-retour
+  function drawTSR(ax,ay,bx,by,S_m){
+    const dir=Math.atan2(by-ay,bx-ax);
+    const perp=dir+Math.PI/2;
+    const half=S_m/2;
+    const pA1=[ax+half*Math.cos(perp),ay+half*Math.sin(perp)];
+    const pB1=[bx+half*Math.cos(perp),by+half*Math.sin(perp)];
+    const pA2=[ax-half*Math.cos(perp),ay-half*Math.sin(perp)];
+    const pB2=[bx-half*Math.cos(perp),by-half*Math.sin(perp)];
+    addArrowLine(pA1,pB1,[255,220,100,220],2);
+    addDashedLine(pB1,pB2,[255,220,100,150],1);
+    addArrowLine(pB2,pA2,[255,220,100,220],2);
+    addLabel(pA1[0],pA1[1],'CSP',[255,220,100],10,14);
+    addLabel((pA1[0]+pB1[0])/2+half*0.4*Math.cos(perp),(pA1[1]+pB1[1])/2+half*0.4*Math.sin(perp),'½S',[200,200,200],9,0);
+    addLabel((pA2[0]+pB2[0])/2-half*0.4*Math.cos(perp),(pA2[1]+pB2[1])/2-half*0.4*Math.sin(perp),'½S',[200,200,200],9,0);
+  }
+
+  // TSN — Sans retour
+  function drawTSN(ax,ay,bx,by,S_m){
+    const dir=Math.atan2(by-ay,bx-ax);
+    const perp=dir+Math.PI/2;
+    const pA1=[ax+S_m*Math.cos(perp),ay+S_m*Math.sin(perp)];
+    const pB1=[bx+S_m*Math.cos(perp),by+S_m*Math.sin(perp)];
+    const pA2=[ax-S_m*Math.cos(perp),ay-S_m*Math.sin(perp)];
+    const pB2=[bx-S_m*Math.cos(perp),by-S_m*Math.sin(perp)];
+    addArrowLine(pA1,pB1,[255,220,100,220],2);
+    addArrowLine(pA2,pB2,[255,220,100,220],2);
+    addLabel(pA1[0],pA1[1],'CSP',[255,220,100],10,14);
+    addLabel((pA1[0]+pB1[0])/2+S_m*0.4*Math.cos(perp),(pA1[1]+pB1[1])/2+S_m*0.4*Math.sin(perp),'S',[200,200,200],9,0);
+    addLabel((pA2[0]+pB2[0])/2-S_m*0.4*Math.cos(perp),(pA2[1]+pB2[1])/2-S_m*0.4*Math.sin(perp),'S',[200,200,200],9,0);
+  }
+
+  // PS — Balayage parallèle
+  function drawPS(ax,ay,bx,by,Ra_m,Rb_m,S_m,nb){
+    const dir=Math.atan2(by-ay,bx-ax);
+    const perp=dir+Math.PI/2;
+    const halfW=Ra_m+Rb_m;
+    const totalW=2*halfW;
+    const zoneW=totalW/Math.max(nb,1);
+    for(let mi=0;mi<nb;mi++){
+      const color=moyens[mi]?moyens[mi].color:'#ffd166';
+      const offStart=-halfW+mi*zoneW;
+      const offEnd=-halfW+(mi+1)*zoneW;
+      // Rectangle sous-zone
+      const z1a=[ax+offStart*Math.cos(perp)-Ra_m*Math.cos(dir),ay+offStart*Math.sin(perp)-Ra_m*Math.sin(dir)];
+      const z2a=[ax+offEnd*Math.cos(perp)-Ra_m*Math.cos(dir),ay+offEnd*Math.sin(perp)-Ra_m*Math.sin(dir)];
+      const z1b=[bx+offStart*Math.cos(perp)+Rb_m*Math.cos(dir),by+offStart*Math.sin(perp)+Rb_m*Math.sin(dir)];
+      const z2b=[bx+offEnd*Math.cos(perp)+Rb_m*Math.cos(dir),by+offEnd*Math.sin(perp)+Rb_m*Math.sin(dir)];
+      const hexC=hexToRgba(color);
+      gl.add(new Graphic({geometry:new Polygon({rings:[[z1a,z2a,z2b,z1b,z1a].map(([x,y])=>toWGS84(x,y))],spatialReference:{wkid:4326}}),
+        symbol:new SFS({color:[hexC[0],hexC[1],hexC[2],40],outline:{color:[hexC[0],hexC[1],hexC[2],180],width:1}})}));
+      // Passes
+      let passOff=offStart+S_m/2;
+      let passIdx=0;
+      while(passOff<offEnd){
+        const pa=[ax+passOff*Math.cos(perp)-Ra_m*Math.cos(dir),ay+passOff*Math.sin(perp)-Ra_m*Math.sin(dir)];
+        const pb=[bx+passOff*Math.cos(perp)+Rb_m*Math.cos(dir),by+passOff*Math.sin(perp)+Rb_m*Math.sin(dir)];
+        if(passIdx%2===0)addArrowLine(pa,pb,[hexC[0],hexC[1],hexC[2],180],1.5);
+        else addArrowLine(pb,pa,[hexC[0],hexC[1],hexC[2],180],1.5);
+        passOff+=S_m;passIdx++;
+      }
+      // CSP au coin de la sous-zone
+      const cspX=z1a[0]+S_m/2*Math.cos(perp)+S_m/2*Math.cos(dir);
+      const cspY=z1a[1]+S_m/2*Math.sin(perp)+S_m/2*Math.sin(dir);
+      if(mi===0){
+        const [cLon,cLat]=toWGS84(cspX,cspY);
+        const cpt=new Point({longitude:cLon,latitude:cLat,spatialReference:{wkid:4326}});
+        gl.add(new Graphic({geometry:cpt,symbol:new SMS({style:"diamond",color:[255,255,0],size:10,outline:{color:[0,0,0],width:1}})}));
+        addLabel(cspX,cspY,'CSP',[255,255,0],10,14);
+      }
+      // Label moyen
+      const midOff=(offStart+offEnd)/2;
+      const midX=ax+midOff*Math.cos(perp)+(bx-ax)/2*Math.cos(dir);
+      const midY=ay+midOff*Math.sin(perp)+(by-ay)/2*Math.sin(dir);
+      const lbl=moyens[mi]?`${MOYEN_TYPES[moyens[mi].type].icon} ${moyens[mi].callsign||'Moyen '+(mi+1)}`:`ZR ${mi+1}`;
+      addLabel(midX,midY,lbl,[hexC[0],hexC[1],hexC[2]],11,0);
+    }
+  }
+
+  // CS — Balayage en lacets
+  function drawCS(ax,ay,bx,by,S_m,Ra_m){
+    const dir=Math.atan2(by-ay,bx-ax);
+    const perp=dir+Math.PI/2;
+    const D_m=Math.hypot(bx-ax,by-ay);
+    let d=S_m;
+    while(d<D_m){
+      const cx=ax+d*Math.cos(dir),cy=ay+d*Math.sin(dir);
+      const p1=[cx+Ra_m*Math.cos(perp),cy+Ra_m*Math.sin(perp)];
+      const p2=[cx-Ra_m*Math.cos(perp),cy-Ra_m*Math.sin(perp)];
+      addArrowLine(p1,p2,[0,200,224,200],1.5);
+      d+=S_m;
+    }
+    const Va=moyens.find(m=>m.type<=1);
+    if(Va&&Va.vitesse>0){
+      const L_nm=D_m/NM,S_nm=S_m/NM;
+      const Vs=(S_nm*Va.vitesse)/(L_nm+S_nm);
+      addLabel((ax+bx)/2,(ay+by)/2+Ra_m*1.3,`Vs navire ≈ ${Vs.toFixed(1)} kt`,[0,200,224],10,0);
+    }
+  }
+
+  function hexToRgba(hex){
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return [r,g,b,255];
+  }
+
+  // ─── CALCULATE ───────────────────────────────────────
+  window.calculateZPA=function(){
+    if(!ptA)return;
+    gl.removeAll();
+    mA.forEach(g=>gl.add(g));
+    if(ptB)mB.forEach(g=>gl.add(g));
+    if(ptCSP)mCSP_markers.forEach(g=>gl.add(g));
+    const S_m=(parseFloat(document.getElementById('det-S').value)||0.6)*NM;
+    const ax=ptA.x,ay=ptA.y;
+
+    if(mode==='datum'){
+      // Cercle de ratissage
+      const Ra_m=RA_NM*NM;
+      gl.add(new Graphic({geometry:makeCircle(ax,ay,Ra_m),symbol:new SFS({color:[0,200,224,20],outline:{color:[0,200,224,200],width:2,style:"dash"}})}));
+      const [lonA,latA]=toWGS84(ax,ay);
+      const ptAg=new Point({longitude:lonA,latitude:latA,spatialReference:{wkid:4326}});
+      gl.add(new Graphic({geometry:ptAg,symbol:new SMS({color:[0,212,160],outline:{color:[255,255,255],width:1.5},size:10})}));
+      gl.add(new Graphic({geometry:ptAg,symbol:new TS({text:'Datum',color:[255,255,255],font:{size:12,weight:"bold"},yoffset:14,haloColor:[0,0,0,200],haloSize:2})}));
+      if(schema==='SS')drawSS(ax,ay,S_m);
+      if(schema==='VS'){
+        const r=parseFloat(document.getElementById('vs-radius').value||10)*NM;
+        if(vsCircleGraphic)gl.add(vsCircleGraphic);
+        if(ptCSP)drawVS(ax,ay,r);
+      }
+      mapView.goTo(makeCircle(ax,ay,RA_NM*NM).extent.expand(1.6));
+    } else {
+      if(!ptB)return;
+      const bx=ptB.x,by=ptB.y;
+      const D_m=Math.hypot(bx-ax,by-ay),D_nm=D_m/NM;
+      const Ra_m=RA_NM*NM,Rb_m=(RA_NM+0.1*D_nm)*NM;
+      // ZPA
+      gl.add(new Graphic({geometry:buildTrapeze(ax,ay,Ra_m,bx,by,Rb_m),symbol:new SFS({color:"rgba(0,200,224,0.2)",outline:{color:"rgba(0,200,224,0.85)",width:2}})}));
+      gl.add(new Graphic({geometry:makeCircle(ax,ay,Ra_m),symbol:new SFS({color:[0,0,0,0],outline:{color:[0,212,160,210],width:2,style:"dash"}})}));
+      gl.add(new Graphic({geometry:makeCircle(bx,by,Rb_m),symbol:new SFS({color:[0,0,0,0],outline:{color:[232,160,32,210],width:2,style:"dash"}})}));
+      const [lonA,latA]=toWGS84(ax,ay),[lonB,latB]=toWGS84(bx,by);
+      gl.add(new Graphic({geometry:new Polyline({paths:[[[lonA,latA],[lonB,latB]]],spatialReference:{wkid:4326}}),symbol:new SLS({color:[255,255,255,160],width:1.5,style:"short-dash"})}));
+      [[lonA,latA,[0,212,160],'A'],[lonB,latB,[232,160,32],'B']].forEach(([lon,lat,col,lbl])=>{
+        const pt=new Point({longitude:lon,latitude:lat,spatialReference:{wkid:4326}});
+        gl.add(new Graphic({geometry:pt,symbol:new SMS({color:col,outline:{color:[255,255,255],width:1.5},size:8})}));
+        gl.add(new Graphic({geometry:pt,symbol:new TS({text:lbl,color:[255,255,255],font:{size:12,weight:"bold"},yoffset:14,haloColor:[0,0,0,200],haloSize:2})}));
+      });
+      const nb=Math.max(moyens.length,1);
+      if(schema==='TSR')drawTSR(ax,ay,bx,by,S_m);
+      if(schema==='TSN')drawTSN(ax,ay,bx,by,S_m);
+      if(schema==='PS') drawPS(ax,ay,bx,by,Ra_m,Rb_m,S_m,nb);
+      if(schema==='CS') drawCS(ax,ay,bx,by,S_m,Ra_m);
+      // Résultats
+      const area_m2=(Ra_m+Rb_m)*D_m/2;
+      const fmt=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u2009');
+      const areaStr=area_m2<10000?`${fmt(area_m2)} m²`:`${fmt(area_m2/10000)} ha`;
+      document.getElementById('results-header').style.display='block';
+      document.getElementById('res-D').textContent=`${D_nm.toFixed(1)} Nm`;
+      document.getElementById('res-D-km').textContent=`${(D_m/1000).toFixed(0)} km`;
+      document.getElementById('res-Ra').textContent=`${RA_NM} Nm`;
+      document.getElementById('res-Ra-km').textContent=`${(Ra_m/1000).toFixed(0)} km`;
+      document.getElementById('res-Rb').textContent=`${(Rb_m/NM).toFixed(1)} Nm`;
+      document.getElementById('res-Rb-km').textContent=`${(Rb_m/1000).toFixed(0)} km`;
+      document.getElementById('res-area').textContent=areaStr;
+      // Bilan
+      if(moyens.length>0){
+        document.getElementById('bilan-section').style.display='block';
+        const table=document.getElementById('bilan-table');
+        table.innerHTML=`<div class="bilan-row bilan-hdr"><span></span><span>Moyen</span><span>Surface</span><span>Schéma</span></div>`;
+        let totalCov=0;
+        moyens.forEach((m,i)=>{
+          const surf=m.vitesse*m.W*m.temps;totalCov+=surf;
+          const row=document.createElement('div');row.className='bilan-row';
+          row.innerHTML=`<div style="width:14px;height:14px;border-radius:50%;background:${m.color}"></div>
+            <span style="color:var(--text)">${MOYEN_TYPES[m.type].icon} ${m.callsign||'Moyen '+(i+1)}</span>
+            <span style="color:${m.color};font-family:var(--mono);font-size:11px">${Math.round(surf)} Nm²</span>
+            <span style="color:var(--text2);font-size:11px">${schema}</span>`;
+          table.appendChild(row);
+        });
+        const areaNm=area_m2/(NM*NM);
+        const pct=Math.min(100,Math.round(totalCov/areaNm*100));
+        document.getElementById('bilan-pct').textContent=pct+'%';
+        document.getElementById('bilan-bar').style.width=pct+'%';
+        document.getElementById('bilan-covered').textContent=Math.round(totalCov)+' Nm²';
+        document.getElementById('bilan-total').textContent=Math.round(areaNm)+' Nm²';
+      }
+      mapView.goTo(buildTrapeze(ax,ay,Ra_m,bx,by,Rb_m).extent.expand(1.4));
+    }
+    computePOD();
+    document.getElementById('export-section').style.display='block';
+    document.getElementById('legend-header').style.display='block';
+    updateLegend();
+  };
+
+  // ─── RESET ───────────────────────────────────────────
+  window.resetAll=function(){
+    gl.removeAll();
+    ptA=ptB=ptCSP=ptWind=null;mA=[];mB=[];mCSP_markers=[];moyens=[];moyenId=0;vsCircleGraphic=null;
+    ['ax','ay','bx','by'].forEach(id=>document.getElementById(id).value='');
+    ['a','b'].forEach(p=>{
+      const st=document.getElementById('status-'+p);if(st){st.textContent='NON DÉFINI';st.className='pt-status';}
+      const bl=document.getElementById('block-'+p);if(bl)bl.classList.remove('defined');
+    });
+    document.getElementById('btn-calc').disabled=true;
+    ['results-header','bilan-section','export-section','legend-header'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('moyens-list').innerHTML='';
+    stopPick();
+  };
+
+  // ─── PRINT ───────────────────────────────────────────
+  window.printPlan=function(){
+    const win=window.open('','_blank');
+    const nc=new Date(Date.now()+11*3600000);
+    const p=n=>String(n).padStart(2,'0');
+    const ds=`${p(nc.getUTCDate())}/${p(nc.getUTCMonth()+1)}/${nc.getUTCFullYear()} ${p(nc.getUTCHours())}:${p(nc.getUTCMinutes())} (NC)`;
+    const mHtml=moyens.map((m,i)=>`<tr><td>${i+1}</td><td>${MOYEN_TYPES[m.type].icon} ${MOYEN_TYPES[m.type].label}</td><td>${m.callsign||'—'}</td><td>${m.vitesse} kt</td><td>${m.W} Nm</td><td>${m.temps} h</td><td>${Math.round(m.vitesse*m.W*m.temps)} Nm²</td></tr>`).join('');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Plan SAR ZPA</title>
+    <style>body{font-family:Arial,sans-serif;padding:20px;font-size:13px;}h1{font-size:18px;border-bottom:2px solid #333;padding-bottom:8px;}h2{font-size:14px;color:#555;margin-top:14px;}table{width:100%;border-collapse:collapse;margin-top:6px;}th{background:#333;color:#fff;padding:6px 8px;font-size:12px;text-align:left;}td{padding:5px 8px;border-bottom:1px solid #ddd;font-size:12px;}.highlight{color:#e8a020;font-weight:bold;}</style>
+    </head><body>
+    <h1>🔍 Plan de Recherche SAR — Nouvelle-Calédonie</h1>
+    <p><b>Date/heure :</b> ${ds} &nbsp;|&nbsp; <b>Mode :</b> ${mode==='datum'?'Position précise (Datum)':'Position incertaine (ZPA)'} &nbsp;|&nbsp; <b>Schéma :</b> ${schema}</p>
+    <h2>Points de référence</h2>
+    <table><tr><th>Point</th><th>X (m)</th><th>Y (m)</th><th>Longitude</th><th>Latitude</th></tr>
+    <tr><td>${mode==='datum'?'Datum':'A'}</td><td>${ptA?Math.round(ptA.x):'—'}</td><td>${ptA?Math.round(ptA.y):'—'}</td><td>${ptA?toWGS84(ptA.x,ptA.y)[0].toFixed(5)+'°':'—'}</td><td>${ptA?toWGS84(ptA.x,ptA.y)[1].toFixed(5)+'°':'—'}</td></tr>
+    ${ptB?`<tr><td>B</td><td>${Math.round(ptB.x)}</td><td>${Math.round(ptB.y)}</td><td>${toWGS84(ptB.x,ptB.y)[0].toFixed(5)}°</td><td>${toWGS84(ptB.x,ptB.y)[1].toFixed(5)}°</td></tr>`:''}
+    ${ptCSP?`<tr><td>CSP</td><td>${Math.round(ptCSP.x)}</td><td>${Math.round(ptCSP.y)}</td><td>${toWGS84(ptCSP.x,ptCSP.y)[0].toFixed(5)}°</td><td>${toWGS84(ptCSP.x,ptCSP.y)[1].toFixed(5)}°</td></tr>`:''}
+    </table>
+    ${mode==='zpa'?`<h2>Résultats ZPA</h2><p>D A→B : <b>${document.getElementById('res-D').textContent}</b> / ${document.getElementById('res-D-km').textContent} &nbsp;|&nbsp; Ra : <b>${document.getElementById('res-Ra').textContent}</b> &nbsp;|&nbsp; Rb : <b>${document.getElementById('res-Rb').textContent}</b> &nbsp;|&nbsp; Surface : <b>${document.getElementById('res-area').textContent}</b></p>`:''}
+    <h2>Paramètres de détection</h2>
+    <p>W = ${document.getElementById('det-W').value} Nm &nbsp;|&nbsp; S = ${document.getElementById('det-S').value} Nm &nbsp;|&nbsp; C = ${document.getElementById('c-val').textContent} &nbsp;|&nbsp; POD = ${document.getElementById('pod-val').textContent} &nbsp;|&nbsp; POS = ${document.getElementById('pos-val').textContent}</p>
+    ${moyens.length>0?`<h2>Bilan des moyens</h2><table><tr><th>#</th><th>Type</th><th>Indicatif</th><th>Vitesse</th><th>W</th><th>Temps</th><th>Surface</th></tr>${mHtml}</table><p>Taux de couverture : <span class="highlight">${document.getElementById('bilan-pct').textContent}</span></p>`:''}
+    <hr><p style="font-size:10px;color:#999">Généré par ZPA SAR NC — ${ds}</p>
+    </body></html>`);
+    win.document.close();setTimeout(()=>win.print(),500);
+  };
+
+  window.exportPlan=function(){
+    const data={date:new Date().toISOString(),mode,schema,ptA,ptB,ptCSP,moyens};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    const d=new Date();a.download=`ZPA_SAR_NC_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+    a.click();
+  };
+});
+
+
+// ═══ WINDY API ═══
+let windyAPI = null;
+let windyMap = null;
+let windyLoaded = false;
+let currentWindyLayer = 'wind';
+
+function loadWindyAPI(callback) {
+  if (windyLoaded) { callback(); return; }
+  const script = document.createElement('script');
+  script.src = 'https://api.windy.com/assets/map-forecast/libBoot.js';
+  script.onload = () => { windyLoaded = true; callback(); };
+  document.head.appendChild(script);
+}
+
+window.openWindyPanel = function(layer) {
+  currentWindyLayer = layer;
+  const panel = document.getElementById('windy-panel');
+  panel.classList.add('visible');
+  updateWindyLayerBtns(layer);
+
+  // Centre sur le datum ou la NC par défaut
+  const lat = ptA ? lnc2wgs(ptA.x, ptA.y)[1] : -21.35;
+  const lon = ptA ? lnc2wgs(ptA.x, ptA.y)[0] : 165.62;
+
+  loadWindyAPI(() => {
+    const container = document.getElementById('windy-container');
+    container.innerHTML = '';
+
+    const options = {
+      key: 'QRie2VbK4OqmRAGSRjtXBmQm1YmGErlU',
+      verbose: false,
+      lat, lon, zoom: 7,
+      overlay: layer,
+    };
+
+    windyInit(options, api => {
+      windyAPI = api;
+      windyMap = api.map;
+      updateWindyLayerBtns(layer);
+    });
+  });
+};
+
+window.switchWindyLayer = function(layer) {
+  currentWindyLayer = layer;
+  updateWindyLayerBtns(layer);
+  if (windyAPI) {
+    windyAPI.store.set('overlay', layer);
+  } else {
+    openWindyPanel(layer);
+  }
+};
+
+window.closeWindyPanel = function() {
+  document.getElementById('windy-panel').classList.remove('visible');
+};
+
+function updateWindyLayerBtns(layer) {
+  ['wind','currents','waves'].forEach(l => {
+    const btn = document.getElementById('wbtn-'+l);
+    if (btn) btn.classList.toggle('active', l === layer);
+  });
+}
+
+// ═══ SAISIE CLAVIER ═══
+['ax','ay'].forEach(id=>document.getElementById(id).addEventListener('change',()=>applyCoord('A')));
+['bx','by'].forEach(id=>document.getElementById(id).addEventListener('change',()=>applyCoord('B')));
+function applyCoord(pt){
+  const x=parseFloat(document.getElementById(pt==='A'?'ax':'bx').value);
+  const y=parseFloat(document.getElementById(pt==='A'?'ay':'by').value);
+  if(!isNaN(x)&&!isNaN(y))setPoint(pt,x,y);
+}
+function setPoint(pt,x,y){
+  if(pt==='A')ptA={x,y};else ptB={x,y};
+  const st=document.getElementById('status-'+pt.toLowerCase());
+  st.textContent='✓ DÉFINI';st.className='pt-status set';
+  document.getElementById('block-'+pt.toLowerCase()).classList.add('defined');
+  updateCalcBtn();
+}
+window.startPick=function(pt){
+  pickingPoint=pt;
+  const labels={A:'Cliquez pour placer le Point A',B:'Cliquez pour placer le Point B',CSP:'Cliquez sur le cercle pour placer le CSP',WIND:'Cliquez un point — direction vers Datum = vent'};
+  document.getElementById('pick-label').textContent=labels[pt]||pt;
+  document.getElementById('pick-banner').classList.add('visible');
+  document.getElementById('map-view').classList.add('picking');
+  if(pt==='A')document.getElementById('pick-a-btn').classList.add('active');
+  if(pt==='B'){const b=document.getElementById('pick-b-btn');if(b)b.classList.add('active');}
+  if(pt==='CSP'){const b=document.getElementById('pick-csp-btn');if(b)b.classList.add('active');}
+};
+function stopPick(){
+  pickingPoint=null;
+  document.getElementById('pick-banner').classList.remove('visible');
+  document.getElementById('map-view').classList.remove('picking');
+  ['pick-a-btn','pick-b-btn','pick-csp-btn'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+}
+</script>
+</body>
+</html>
